@@ -37,7 +37,7 @@ API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 # ─────────────────────────────────────────────────────────────────────
 # WHICH PROBLEM. "A" = claims first response, "B" = referral coordination.
 # ─────────────────────────────────────────────────────────────────────
-PROBLEM = "B"
+PROBLEM = "A"
 
 # ─────────────────────────────────────────────────────────────────────
 # GUARDRAIL LIMITS (D3a). These are the code layer. Set them from
