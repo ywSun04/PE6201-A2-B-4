@@ -166,5 +166,55 @@
       "600 remaining on POL-4102"
     ],
     "note": "Near a boundary is not over it. A team whose limit check uses >= will fail this one and no other."
+  },
+  {
+    "case_id": "CLM-9201",
+    "expected_decision": "approve_in_principle",
+    "family": "two_distinct_valid_preauthorisations",
+    "must_record": [
+      "PA-5521 cited for line 62480",
+      "PA-6101 cited for line 71300",
+      "both authorisations valid on 2026-10-05",
+      "approved_total 1380",
+      "H-114 recorded as panel"
+    ],
+    "note": "Both lines require pre-authorisation. One valid authorisation does not authorise the other procedure."
+  },
+  {
+    "case_id": "CLM-9202",
+    "expected_decision": "approve_in_principle",
+    "family": "new_member_policy_and_non_panel_join",
+    "must_record": [
+      "M-7001 linked to active POL-8001",
+      "H-451 recorded as non-panel",
+      "approved_total 1710",
+      "both lines covered"
+    ],
+    "note": "A new member and policy test referential integrity. Non-panel status changes the payment basis, not the decision."
+  },
+  {
+    "case_id": "CLM-9203",
+    "expected_decision": "approve_in_principle",
+    "family": "new_document_rule_satisfied",
+    "must_record": [
+      "PA-6102 cited for line 71300",
+      "radiology_report present for line 71300",
+      "approved_total 750",
+      "no request_document outcome"
+    ],
+    "note": "The new document rule is satisfied. The agent must not ask for a document that is already attached."
+  },
+  {
+    "case_id": "CLM-9204",
+    "expected_decision": "approve_in_principle",
+    "family": "new_exclusion_rule_partial_approval",
+    "must_record": [
+      "47120 approved",
+      "88305 refused under EX-22 pathology not covered by Shield Select",
+      "approved_total 1400",
+      "refused_total 200",
+      "a disposition for both lines"
+    ],
+    "note": "A partial approval remains an approve_in_principle response. The attached pathology report does not override a policy exclusion."
   }
 ]
