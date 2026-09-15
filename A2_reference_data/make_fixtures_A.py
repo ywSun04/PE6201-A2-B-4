@@ -383,21 +383,142 @@ DECIDED = [
 # cannot be scored.
 # ═════════════════════════════════════════════════════════════════════════════
 
-EXTRA_PROCEDURES = []          # {"code", "description", "requires_preauth"}
-EXTRA_HOSPITALS = []           # {"hospital_id", "name", "panel", "country"}
-EXTRA_POLICIES = []            # {"policy_id", "product", "status", "start_date",
-                               #  "end_date", "annual_limit", "used_to_date",
-                               #  "exclusions": [{"code", "rule"}]}
-EXTRA_MEMBERS = []             # {"member_id", "name", "policy_id", "join_date"}
-EXTRA_PREAUTHORISATIONS = []   # {"preauth_id", "member_id", "procedure_code",
-                               #  "valid_from", "valid_to"}
-EXTRA_CLAIMS = []              # {"claim_id", "member_id", "hospital_id",
-                               #  "date_of_service", "narrative", "documents",
-                               #  "lines": [{"code", "amount"}]}
-EXTRA_DECIDED = []             # {"claim_id", "member_id", "hospital_id",
-                               #  "date_of_service", "lines", "decision", "decided_on"}
-EXTRA_REQUIRED_DOCS = {}       # "procedure_code": "document_name"
+EXTRA_PROCEDURES = [
+    {
+        "code": "71300",
+        "description": "Shoulder MRI with contrast",
+        "requires_preauth": True,
+    },
+    {
+        "code": "88305",
+        "description": "Surgical pathology examination",
+        "requires_preauth": False,
+    },
+]
 
+EXTRA_HOSPITALS = []
+
+EXTRA_POLICIES = [
+    {
+        "policy_id": "POL-8001",
+        "product": "Shield Premium",
+        "status": "active",
+        "start_date": "2026-01-01",
+        "end_date": "2026-12-31",
+        "annual_limit": 7000,
+        "used_to_date": 500,
+        "exclusions": [],
+    },
+    {
+        "policy_id": "POL-8002",
+        "product": "Shield Select",
+        "status": "active",
+        "start_date": "2026-01-01",
+        "end_date": "2026-12-31",
+        "annual_limit": 5000,
+        "used_to_date": 0,
+        "exclusions": [
+            {
+                "code": "88305",
+                "rule": "EX-22 pathology not covered by Shield Select",
+            }
+        ],
+    },
+]
+
+EXTRA_MEMBERS = [
+    {
+        "member_id": "M-7001",
+        "name": "Aisha Rahman",
+        "policy_id": "POL-8001",
+        "join_date": "2025-11-15",
+    },
+    {
+        "member_id": "M-7002",
+        "name": "David Tan",
+        "policy_id": "POL-8002",
+        "join_date": "2025-12-01",
+    },
+]
+
+EXTRA_PREAUTHORISATIONS = [
+    {
+        "preauth_id": "PA-6101",
+        "member_id": "M-2214",
+        "procedure_code": "71300",
+        "valid_from": "2026-09-01",
+        "valid_to": "2026-11-30",
+    },
+    {
+        "preauth_id": "PA-6102",
+        "member_id": "M-7001",
+        "procedure_code": "71300",
+        "valid_from": "2026-09-15",
+        "valid_to": "2026-12-15",
+    },
+]
+
+EXTRA_CLAIMS = [
+    {
+        "claim_id": "CLM-9201",
+        "member_id": "M-2214",
+        "hospital_id": "H-114",
+        "date_of_service": "2026-10-05",
+        "narrative": "Follow-up spinal treatment and shoulder imaging after a fall.",
+        "documents": [
+            "itemised_bill",
+            "discharge_summary",
+            "radiology_report",
+        ],
+        "lines": [
+            {"code": "62480", "amount": 780},
+            {"code": "71300", "amount": 600},
+        ],
+    },
+    {
+        "claim_id": "CLM-9202",
+        "member_id": "M-7001",
+        "hospital_id": "H-451",
+        "date_of_service": "2026-10-06",
+        "narrative": "Emergency appendix treatment while visiting Penang.",
+        "documents": ["itemised_bill"],
+        "lines": [
+            {"code": "99213", "amount": 210},
+            {"code": "47120", "amount": 1500},
+        ],
+    },
+    {
+        "claim_id": "CLM-9203",
+        "member_id": "M-7001",
+        "hospital_id": "H-207",
+        "date_of_service": "2026-10-07",
+        "narrative": "Shoulder imaging and blood test following specialist review.",
+        "documents": ["itemised_bill", "radiology_report"],
+        "lines": [
+            {"code": "71300", "amount": 650},
+            {"code": "80053", "amount": 100},
+        ],
+    },
+    {
+        "claim_id": "CLM-9204",
+        "member_id": "M-7002",
+        "hospital_id": "H-114",
+        "date_of_service": "2026-10-08",
+        "narrative": "Appendix operation with pathology examination.",
+        "documents": ["itemised_bill", "pathology_report"],
+        "lines": [
+            {"code": "47120", "amount": 1400},
+            {"code": "88305", "amount": 200},
+        ],
+    },
+]
+
+EXTRA_DECIDED = []
+
+EXTRA_REQUIRED_DOCS = {
+    "71300": "radiology_report",
+    "88305": "pathology_report",
+}
 
 def write():
     os.makedirs(OUT, exist_ok=True)
