@@ -19,5 +19,19 @@
     "procedure_code": "27447",
     "valid_from": "2026-07-01",
     "valid_to": "2026-12-31"
+  },
+  {
+    "preauth_id": "PA-6101",
+    "member_id": "M-2214",
+    "procedure_code": "71300",
+    "valid_from": "2026-09-01",
+    "valid_to": "2026-11-30"
+  },
+  {
+    "preauth_id": "PA-6102",
+    "member_id": "M-7001",
+    "procedure_code": "71300",
+    "valid_from": "2026-09-15",
+    "valid_to": "2026-12-15"
   }
 ]

@@ -28,5 +28,17 @@
     "name": "Lim Jun Hao",
     "policy_id": "POL-7220",
     "join_date": "2025-02-01"
+  },
+  {
+    "member_id": "M-7001",
+    "name": "Aisha Rahman",
+    "policy_id": "POL-8001",
+    "join_date": "2025-11-15"
+  },
+  {
+    "member_id": "M-7002",
+    "name": "David Tan",
+    "policy_id": "POL-8002",
+    "join_date": "2025-12-01"
   }
 ]

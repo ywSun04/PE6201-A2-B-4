@@ -48,5 +48,15 @@
     "code": "80053",
     "description": "Comprehensive metabolic panel",
     "requires_preauth": false
+  },
+  {
+    "code": "71300",
+    "description": "Shoulder MRI with contrast",
+    "requires_preauth": true
+  },
+  {
+    "code": "88305",
+    "description": "Surgical pathology examination",
+    "requires_preauth": false
   }
 ]

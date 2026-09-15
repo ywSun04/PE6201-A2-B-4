@@ -291,5 +291,89 @@
         "amount": 170
       }
     ]
+  },
+  {
+    "claim_id": "CLM-9201",
+    "member_id": "M-2214",
+    "hospital_id": "H-114",
+    "date_of_service": "2026-10-05",
+    "narrative": "Follow-up spinal treatment and shoulder imaging after a fall.",
+    "documents": [
+      "itemised_bill",
+      "discharge_summary",
+      "radiology_report"
+    ],
+    "lines": [
+      {
+        "code": "62480",
+        "amount": 780
+      },
+      {
+        "code": "71300",
+        "amount": 600
+      }
+    ]
+  },
+  {
+    "claim_id": "CLM-9202",
+    "member_id": "M-7001",
+    "hospital_id": "H-451",
+    "date_of_service": "2026-10-06",
+    "narrative": "Emergency appendix treatment while visiting Penang.",
+    "documents": [
+      "itemised_bill"
+    ],
+    "lines": [
+      {
+        "code": "99213",
+        "amount": 210
+      },
+      {
+        "code": "47120",
+        "amount": 1500
+      }
+    ]
+  },
+  {
+    "claim_id": "CLM-9203",
+    "member_id": "M-7001",
+    "hospital_id": "H-207",
+    "date_of_service": "2026-10-07",
+    "narrative": "Shoulder imaging and blood test following specialist review.",
+    "documents": [
+      "itemised_bill",
+      "radiology_report"
+    ],
+    "lines": [
+      {
+        "code": "71300",
+        "amount": 650
+      },
+      {
+        "code": "80053",
+        "amount": 100
+      }
+    ]
+  },
+  {
+    "claim_id": "CLM-9204",
+    "member_id": "M-7002",
+    "hospital_id": "H-114",
+    "date_of_service": "2026-10-08",
+    "narrative": "Appendix operation with pathology examination.",
+    "documents": [
+      "itemised_bill",
+      "pathology_report"
+    ],
+    "lines": [
+      {
+        "code": "47120",
+        "amount": 1400
+      },
+      {
+        "code": "88305",
+        "amount": 200
+      }
+    ]
   }
 ]

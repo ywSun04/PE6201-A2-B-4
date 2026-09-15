@@ -10,5 +10,13 @@
   {
     "procedure_code": "45378",
     "document": "itemised_bill"
+  },
+  {
+    "procedure_code": "71300",
+    "document": "radiology_report"
+  },
+  {
+    "procedure_code": "88305",
+    "document": "pathology_report"
   }
 ]
