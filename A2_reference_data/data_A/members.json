@@ -28,5 +28,17 @@
     "name": "Lim Jun Hao",
     "policy_id": "POL-7220",
     "join_date": "2025-02-01"
+  },
+  {
+    "member_id": "M-7301",
+    "name": "Wong Mei Ling",
+    "policy_id": "POL-8301",
+    "join_date": "2025-10-01"
+  },
+  {
+    "member_id": "M-7302",
+    "name": "Ahmad Faizal",
+    "policy_id": "POL-8302",
+    "join_date": "2025-09-01"
   }
 ]

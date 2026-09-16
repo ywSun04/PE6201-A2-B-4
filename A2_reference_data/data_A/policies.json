@@ -67,5 +67,25 @@
         "rule": "EX-14 cosmetic dermatology"
       }
     ]
+  },
+  {
+    "policy_id": "POL-8301",
+    "product": "Shield Basic",
+    "status": "lapsed",
+    "start_date": "2025-10-01",
+    "end_date": "2026-09-30",
+    "annual_limit": 10000,
+    "used_to_date": 1500,
+    "exclusions": []
+  },
+  {
+    "policy_id": "POL-8302",
+    "product": "Shield Plus",
+    "status": "active",
+    "start_date": "2025-09-01",
+    "end_date": "2026-08-31",
+    "annual_limit": 8000,
+    "used_to_date": 500,
+    "exclusions": []
   }
 ]
