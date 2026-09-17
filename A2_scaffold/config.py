@@ -20,6 +20,7 @@ failure reproductions (D7) ALL run scripted. Only the battery is live.
 ====================================================================
 """
 import os
+import sys
 
 # ─────────────────────────────────────────────────────────────────────
 # THE THREE STRINGS. Change these, change nothing else.
@@ -107,11 +108,47 @@ def data_root():
 
 # ─────────────────────────────────────────────────────────────────────
 # PRICES, US dollars per MILLION tokens. Section 7 of the brief.
-# Checked against vendor pages 28 August 2026. RE-CHECK THEM: quoting a
-# price you did not verify is the kind of thing D6 is marked on.
+#
+# KEYED BY MODEL, on purpose. Six of us run six different models against
+# the same harness, and the scaffold's own rule is that switching model
+# is changing one string. With a single hardcoded pair, changing that
+# string left everyone else's price in place and the cost column came out
+# confidently wrong - the exact failure D6 is marked on, and one that
+# looks like a result rather than a mistake.
+#
+# Read from openrouter.ai/api/v1/models on 17 September 2026 by
+# docs/evidence/refresh_prices.py. Re-run it before quoting these; if a
+# price moved, the script says so and this table is what it corrects.
 # ─────────────────────────────────────────────────────────────────────
-PRICE_IN = 0.10
-PRICE_OUT = 0.40
+PRICES = {
+    "openai/gpt-4o-mini":                       (0.150, 0.600),
+    "qwen/qwen3.8-flash":                        (0.150, 0.470),
+    "meta-llama/llama-3.3-70b-instruct":         (0.100, 0.320),
+    "mistralai/mistral-small-3.2-24b-instruct":  (0.094, 0.250),
+    "deepseek/deepseek-chat":                    (0.257, 1.029),
+}
+
+# What an unlisted model falls back to. Deliberately not a real price:
+# it is high enough to be noticed in a cost table rather than blend in.
+_FALLBACK = (1.000, 3.000)
+
+
+def prices():
+    """(in, out) per million tokens for the model currently configured."""
+    if MODEL in PRICES:
+        return PRICES[MODEL]
+    if BACKEND == "live":
+        sys.stderr.write(
+            "\n  PRICE NOT ON FILE for %r.\n"
+            "  Costs are being computed at the placeholder US$%.3f/%.3f and\n"
+            "  are WRONG. Add your model to PRICES in config.py - the real\n"
+            "  numbers are one call away:\n"
+            "      python3 docs/evidence/refresh_prices.py\n\n"
+            % ((MODEL,) + _FALLBACK))
+    return _FALLBACK
+
+
+PRICE_IN, PRICE_OUT = prices()
 
 
 def _stale_bytecode_warning():

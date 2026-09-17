@@ -136,6 +136,17 @@ def run_case(case_id, problem=None, approve=None, verbose=False):
                   "reason": "halted by the %s guardrail - %s"
                             % (stop.reason, stop.detail)}
 
+    except tools.ToolError as err:
+        # Same shape as a guardrail halt: one failed record, not a dead
+        # battery. The tool layer now refuses invented codes, unknown
+        # tools, and a decision that is not one of the three legal
+        # values. Without this clause a live model that emits "approve"
+        # instead of "approve_in_principle" would take the rest of
+        # --all down with it.
+        stopped_by = err.reason
+        record = {"decision": "escalate",
+                  "reason": "tool layer refused - %s" % err.detail}
+
     cost = (tokens_in / 1e6) * config.PRICE_IN + (tokens_out / 1e6) * config.PRICE_OUT
 
     record.update({

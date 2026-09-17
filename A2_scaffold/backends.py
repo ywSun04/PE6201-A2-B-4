@@ -576,30 +576,55 @@ class LiveBackend:
         self.case_id = case_id
         self.tools = tool_descriptors
         self.system_prompt = system_prompt
+        self._last_usage = (0, 0)
 
     def next_move(self, transcript):
         messages = [{"role": "system", "content": self.system_prompt}]
         for entry in transcript:
             messages.append({"role": entry["role"], "content": entry["content"]})
-        raw = _live_call(messages)
+        raw, self._last_usage = _live_call(messages)
         return _parse_move(raw)
 
-    @staticmethod
-    def token_estimate(transcript):
-        # Replace with the usage numbers the API returns. Estimating here
-        # and calling it measured is the mistake D6 punishes.
-        return 0, 0
+    def token_estimate(self, transcript):
+        """The counts OPENROUTER REPORTED for the call next_move just made.
+
+        Measured, not estimated - which is the whole point, and which is
+        why this shipped returning (0, 0) with a note to replace it.
+
+        agent.py calls this once per turn, immediately after next_move,
+        and ACCUMULATES: tokens_in += ti. So this returns the delta for
+        the turn that just happened, not a running total, and zeroes
+        itself after being read so a second call cannot double-count.
+
+        Zero here means the response carried no usage block. That is a
+        real answer - it says the battery is not measuring - and is far
+        better than a plausible estimate, which would be indistinguishable
+        from a measurement in the results file.
+        """
+        used, self._last_usage = self._last_usage, (0, 0)
+        return used
 
 
 def _parse_move(text):
     """The model must answer in JSON. Anything else is a run you cannot
-    grade, so say so loudly rather than guessing."""
+    grade, so say so loudly rather than guessing.
+
+    A fenced block (```json ... ```) is recovered rather than failed:
+    the content is still JSON, the model just wrapped it. Anything that
+    is not an object after that is still a loud escalate.
+    """
+    raw = (text or "").strip()
+    if raw.startswith("```"):
+        raw = raw.strip("`")
+        if raw[:4].lower() == "json":
+            raw = raw[4:]
+        raw = raw.strip()
     try:
-        return json.loads(text)
+        return json.loads(raw)
     except json.JSONDecodeError:
         return {"final": {"decision": "escalate",
                           "reason": "model did not return parseable JSON"},
-                "thought": "unparseable: %s" % text[:200]}
+                "thought": "unparseable: %s" % (text or "")[:200]}
 
 
 def _live_call(messages):
@@ -608,6 +633,11 @@ def _live_call(messages):
     Everything else speaks in terms of moves and transcripts. Swapping
     vendor means rewriting this one function, and changing MODEL and
     BASE_URL in config.py. Nothing else.
+
+    Returns (content, (prompt_tokens, completion_tokens)). The usage block
+    is the vendor's own count and is the only honest source for D6 - the
+    alternative is estimating in the one place where a measurement was
+    available and free.
     """
     if not config.API_KEY:
         raise SystemExit(
@@ -624,9 +654,12 @@ def _live_call(messages):
         data=body,
         headers={"Authorization": "Bearer " + config.API_KEY,
                  "Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=60) as r:
+    with urllib.request.urlopen(req, timeout=90) as r:
         payload = json.load(r)
-    return payload["choices"][0]["message"]["content"]
+    usage = payload.get("usage") or {}
+    return (payload["choices"][0]["message"]["content"],
+            (usage.get("prompt_tokens", 0) or 0,
+             usage.get("completion_tokens", 0) or 0))
 
 
 def make_backend(case_id, tool_descriptors=None, system_prompt=""):
