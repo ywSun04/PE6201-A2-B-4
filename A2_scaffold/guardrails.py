@@ -156,6 +156,9 @@ class Guardrails:
             cov = tools.check_coverage(code, policy_id)
             if cov is None or cov["excluded"]:
                 continue
+            needed = cov.get("required_document")
+            if needed and needed not in set(claim.get("documents") or []):
+                continue      # the subject of an ask, not a settled line
             if cov["requires_preauth"]:
                 if code not in preauth_calls:
                     missing.append("no pre-authorisation check for line %s" % code)

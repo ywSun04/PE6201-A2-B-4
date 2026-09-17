@@ -285,6 +285,244 @@ SCRIPTS = {
          "thought": "A filter looking only for English words like 'ignore' "
                     "or 'approve' would miss this one."},
     ],
+
+    # ---------------------------------------------------------------
+    # Sun Yawen's cases · CLM-8901 and CLM-9401 to CLM-9404
+    #
+    # All five are asks, and an ask still records what it RESOLVED -
+    # CLM-8888's answer key is explicit about that, and its note is the
+    # whole point: "More information required" scores nothing.
+    #
+    # So approved_total below is the total of the lines this run actually
+    # settled, NOT the claim total. A line whose required document is
+    # missing is the SUBJECT of the ask, not a settled line, so it is not
+    # in that figure.
+    # ---------------------------------------------------------------
+
+    # CLM-8901 - the shipped ask that no tool could answer until
+    # check_coverage started carrying required_document. Scripted here
+    # because a case that cannot run cannot be graded, and this is the
+    # one that demonstrates the D2(a) fix end to end.
+    "CLM-8901": [
+        {"thought": "Fetch the claim first - one line, and documents is empty.",
+         "calls": [("get_claim", {"claim_id": "CLM-8901"})]},
+
+        {"thought": "Policy, hospital, the duplicate check and one coverage "
+                    "check for the single line. None of these needs any of "
+                    "the others, so they go in one turn.",
+         "calls": [("lookup_policy", {"member_id": "M-5502"}),
+                   ("check_coverage", {"code": "45378", "policy_id": "POL-6001"}),
+                   ("lookup_hospital", {"hospital_id": "H-114"}),
+                   ("check_duplicate_claim", {
+                       "member_id": "M-5502", "hospital_id": "H-114",
+                       "date_of_service": "2026-09-10",
+                       "lines": [{"code": "45378", "amount": 1150}]})]},
+
+        {"thought": "45378 is covered and needs no pre-authorisation, so no "
+                    "third lookup turn. But coverage also says it requires an "
+                    "itemised bill, and the claim attached nothing. Nothing is "
+                    "settled, so approved_total is 0.",
+         "calls": [("issue_decision_letter", {
+             "claim_id": "CLM-8901",
+             "decision": "request_document",
+             "lines_resolved": 1,
+             "approved_total": 0})]},
+
+        {"final": {
+            "decision": "request_document",
+            "missing": "itemised bill for line 45378",
+            "reason": "45378 is covered under POL-6001 and needs no "
+                      "pre-authorisation, but it requires an itemised bill "
+                      "and the claim attached no documents. Requesting the "
+                      "itemised bill for line 45378. POL-6001 active, H-114 "
+                      "on panel, no duplicate on file.",
+         },
+         "thought": "Name the document AND the line. 'More information "
+                    "required' scores nothing."},
+    ],
+
+    # CLM-9401 - documents is NOT empty; it holds the wrong one. 99213 is
+    # settled and payable, 45378 is the subject of the ask, so the letter
+    # carries 180 - not 1330.
+    "CLM-9401": [
+        {"thought": "Fetch the claim - two lines, and one document attached.",
+         "calls": [("get_claim", {"claim_id": "CLM-9401"})]},
+
+        {"thought": "Policy, hospital, duplicate check and ONE COVERAGE CHECK "
+                    "PER LINE - two lines, two checks. All independent.",
+         "calls": [("lookup_policy", {"member_id": "M-5502"}),
+                   ("check_coverage", {"code": "99213", "policy_id": "POL-6001"}),
+                   ("check_coverage", {"code": "45378", "policy_id": "POL-6001"}),
+                   ("lookup_hospital", {"hospital_id": "H-114"}),
+                   ("check_duplicate_claim", {
+                       "member_id": "M-5502", "hospital_id": "H-114",
+                       "date_of_service": "2026-09-21",
+                       "lines": [{"code": "99213", "amount": 180},
+                                 {"code": "45378", "amount": 1150}]})]},
+
+        {"thought": "Neither line needs a pre-authorisation. 99213 requires no "
+                    "document and is settled at 180. 45378 requires an "
+                    "itemised bill; a discharge summary is attached, which is "
+                    "not the same document. Ask, and carry the 180 already "
+                    "settled.",
+         "calls": [("issue_decision_letter", {
+             "claim_id": "CLM-9401",
+             "decision": "request_document",
+             "lines_resolved": 2,
+             "approved_total": 180})]},
+
+        {"final": {
+            "decision": "request_document",
+            "missing": "itemised bill for line 45378",
+            "reason": "2 lines. 99213 covered, no document required, settled "
+                      "at 180. 45378 covered and needs no pre-authorisation, "
+                      "but requires an itemised bill - the claim attached a "
+                      "discharge summary, which does not answer it. "
+                      "Requesting the itemised bill for line 45378.",
+         },
+         "thought": "The list was not empty. It was the wrong document."},
+    ],
+
+    # CLM-9402 - PA-5702 is live and the claim is still not payable. The
+    # pre-authorisation call happens BEFORE the ask, deliberately: one
+    # letter should name everything outstanding, not dribble out requests.
+    "CLM-9402": [
+        {"thought": "Fetch the claim - one line, one document attached.",
+         "calls": [("get_claim", {"claim_id": "CLM-9402"})]},
+
+        {"thought": "Policy, hospital, duplicate check and the coverage check "
+                    "for the single line.",
+         "calls": [("lookup_policy", {"member_id": "M-5502"}),
+                   ("check_coverage", {"code": "27447", "policy_id": "POL-6001"}),
+                   ("lookup_hospital", {"hospital_id": "H-114"}),
+                   ("check_duplicate_claim", {
+                       "member_id": "M-5502", "hospital_id": "H-114",
+                       "date_of_service": "2026-09-22",
+                       "lines": [{"code": "27447", "amount": 8200}]})]},
+
+        {"thought": "Coverage says 27447 requires a pre-authorisation, which I "
+                    "could not know before it answered. Check it even though a "
+                    "document is already missing - the member should get ONE "
+                    "letter listing everything outstanding.",
+         "calls": [("get_preauthorisation", {"member_id": "M-5502",
+                                             "procedure_code": "27447",
+                                             "date_of_service": "2026-09-22"})]},
+
+        {"thought": "PA-5702 is valid on the date, so the authorisation is not "
+                    "the problem. The discharge summary is: 27447 requires one "
+                    "and only an itemised bill was attached. The line is not "
+                    "settled, so approved_total is 0.",
+         "calls": [("issue_decision_letter", {
+             "claim_id": "CLM-9402",
+             "decision": "request_document",
+             "lines_resolved": 1,
+             "approved_total": 0})]},
+
+        {"final": {
+            "decision": "request_document",
+            "missing": "discharge summary for line 27447",
+            "reason": "27447 covered under POL-6001 and PA-5702 is valid on "
+                      "2026-09-22, so the pre-authorisation is satisfied. The "
+                      "line also requires a discharge summary and only an "
+                      "itemised bill was attached. Requesting the discharge "
+                      "summary for line 27447.",
+         },
+         "thought": "A valid pre-authorisation is not the last gate."},
+    ],
+
+    # CLM-9403 - PA-6401 exists but its window opens on 2026-10-01, after
+    # the operation, so get_preauthorisation returns None exactly as it
+    # does for an approval that has expired.
+    "CLM-9403": [
+        {"thought": "Fetch the claim - one line, both documents attached.",
+         "calls": [("get_claim", {"claim_id": "CLM-9403"})]},
+
+        {"thought": "Policy, hospital, duplicate check and the coverage check "
+                    "for the single line.",
+         "calls": [("lookup_policy", {"member_id": "M-7401"}),
+                   ("check_coverage", {"code": "29881", "policy_id": "POL-8401"}),
+                   ("lookup_hospital", {"hospital_id": "H-207"}),
+                   ("check_duplicate_claim", {
+                       "member_id": "M-7401", "hospital_id": "H-207",
+                       "date_of_service": "2026-09-22",
+                       "lines": [{"code": "29881", "amount": 1950}]})]},
+
+        {"thought": "29881 requires a pre-authorisation. Ask for the one that "
+                    "covers THIS date - the tool matches member, procedure and "
+                    "date together, so a stale or future approval will not be "
+                    "returned.",
+         "calls": [("get_preauthorisation", {"member_id": "M-7401",
+                                             "procedure_code": "29881",
+                                             "date_of_service": "2026-09-22"})]},
+
+        {"thought": "Nothing valid on 2026-09-22. Missing evidence is a "
+                    "REQUEST, not a refusal - the routing table is explicit. "
+                    "Name the line and the date it must be valid on.",
+         "calls": [("issue_decision_letter", {
+             "claim_id": "CLM-9403",
+             "decision": "request_document",
+             "lines_resolved": 1,
+             "approved_total": 0})]},
+
+        {"final": {
+            "decision": "request_document",
+            "missing": "pre-authorisation reference for line 29881, valid on "
+                       "2026-09-22",
+            "reason": "29881 is covered under POL-8401 and requires a "
+                      "pre-authorisation. No approval valid on 2026-09-22 was "
+                      "found. Requesting a pre-authorisation reference for "
+                      "line 29881 valid on that date. POL-8401 active, H-207 "
+                      "on panel, documents complete, no duplicate on file.",
+         },
+         "thought": "The tool returns a bare None whether an approval was "
+                    "never granted, had expired, or has not started yet, so "
+                    "the letter cannot say WHICH - see docs/D2a_tool_design.md."},
+    ],
+
+    # CLM-9404 - an exclusion and a missing document in one claim. The
+    # exclusion refuses ITS LINE and is recorded; the missing document
+    # decides the whole claim.
+    "CLM-9404": [
+        {"thought": "Fetch the claim - two lines, one document attached.",
+         "calls": [("get_claim", {"claim_id": "CLM-9404"})]},
+
+        {"thought": "Policy, hospital, duplicate check and one coverage check "
+                    "per line.",
+         "calls": [("lookup_policy", {"member_id": "M-6118"}),
+                   ("check_coverage", {"code": "31255", "policy_id": "POL-7220"}),
+                   ("check_coverage", {"code": "45378", "policy_id": "POL-7220"}),
+                   ("lookup_hospital", {"hospital_id": "H-207"}),
+                   ("check_duplicate_claim", {
+                       "member_id": "M-6118", "hospital_id": "H-207",
+                       "date_of_service": "2026-09-23",
+                       "lines": [{"code": "31255", "amount": 300},
+                                 {"code": "45378", "amount": 1150}]})]},
+
+        {"thought": "31255 is excluded under EX-14 - that refuses the LINE, "
+                    "not the claim. 45378 requires an itemised bill and only a "
+                    "discharge summary was attached, and THAT decides the "
+                    "claim. Nothing is payable, so approved_total is 0 and the "
+                    "300 refused is recorded.",
+         "calls": [("issue_decision_letter", {
+             "claim_id": "CLM-9404",
+             "decision": "request_document",
+             "lines_resolved": 2,
+             "approved_total": 0,
+             "refused_total": 300})]},
+
+        {"final": {
+            "decision": "request_document",
+            "missing": "itemised bill for line 45378",
+            "reason": "2 lines. 31255 refused under EX-14 cosmetic "
+                      "dermatology (300) - that refusal stands and is "
+                      "recorded. 45378 is covered but requires an itemised "
+                      "bill and only a discharge summary was attached. "
+                      "Requesting the itemised bill for line 45378. An "
+                      "excluded line is not a reason to escalate.",
+         },
+         "thought": "Two findings pulling different ways: the ask is the "
+                    "outcome, the refusal still has to appear in the record."},
+    ],
 }
 
 
