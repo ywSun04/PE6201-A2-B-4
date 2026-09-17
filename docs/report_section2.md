@@ -64,8 +64,8 @@ because whether it pays for itself is precisely what the comparison exists to me
 | Six-field contract | 3 of 6 | 6 of 6 |
 | Unknown code or policy | returns `None` | raises, naming it |
 | `required_document` reachable | no | yes |
-| Evaluation pass rate | **[LIVE]** | **[LIVE]** |
-| Guardrail cases passed | **[LIVE]** | **[LIVE]** |
+| Evaluation pass rate | **[LIVE — v1 not run yet]** | **17 of 63 trials (27%)** on `qwen/qwen3.8-flash`, 25 cases, 2026-09-17. Median 2 turns. See `docs/evidence/live_results.json`. Raw rate understates outcome-agreement: several escalate cases chose the right decision and failed only on the trigger string. |
+| Guardrail cases passed | **[LIVE — not this battery]** | Not run on live; Harry's 12 scripted guardrail cases remain the D3(b) measurement. |
 
 Both arms run on the same model, as the brief requires, so the difference is attributable
 to the descriptor and not to the model.

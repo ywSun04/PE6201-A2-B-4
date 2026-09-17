@@ -674,7 +674,7 @@ def _live_call(messages):
     payload = None
     for attempt in range(6):
         try:
-            with urllib.request.urlopen(req, timeout=90) as r:
+            with urllib.request.urlopen(req, timeout=120) as r:
                 payload = json.load(r)
             break
         except urllib.error.HTTPError as err:
@@ -689,7 +689,7 @@ def _live_call(messages):
                 except ValueError:
                     pass
             time.sleep(wait)
-        except urllib.error.URLError as err:
+        except (urllib.error.URLError, TimeoutError, OSError) as err:
             last_err = err
             if attempt == 5:
                 raise

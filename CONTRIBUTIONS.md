@@ -10,12 +10,56 @@ see #2 for the shape.
 
 | # | Name | GitHub | Strand(s) owned | Summary |
 |---|---|---|---|---|
-| 1 | Sun Yawen | ywSun04 | D2(a), D2(b) — tool design, descriptors, v1/v2 rewrite | *fill in* |
+| 1 | Sun Yawen | ywSun04 | D2(a), D2(b) — tool design, descriptors, v1/v2 rewrite | see below |
 | 2 | Chan Hio Weng (Harry) | harry00001177 | D3, D7 — guardrails and two reproduced failures | see below |
 | 3 | Liu Zeyuan | Lizzy-808 | D0, D6, D5(b) v1 — cost model, v1 battery, report/video | *fill in* |
 | 4 | Mohanarangan Preethi | preethi1522 | D1, D2(c) — agent loop, tool implementation, parallel calls | *fill in* |
 | 5 | Zhang Yizhuo | waterrrr0924 | D4, D5(a) — evaluation harness, scripted run | *fill in* |
 | 6 | Kou Huilin | khl789 | D4 (data) — fixtures, extra cases, answer key | *fill in* |
+
+## 1 — Sun Yawen — D2(a), D2(b)
+
+**AI tools used:** Cursor (Grok 4.6) as a coding assistant for the tool layer,
+descriptors, evidence scripts, and this write-up. Commits on `main` are authored
+only as `ywSun04` — the brief grades contribution from history, so assistant
+trailers were stripped rather than left on the record. Design decisions (which
+file was unreachable, which tool is this set's `search_notes`, returning
+`required_document` as a field instead of an eighth tool, the five poka-yoke
+moves, not changing the tool set once live runs were pending) were mine; every
+number below was re-run from `docs/evidence/` before it was quoted.
+
+**Tool set (`A2_scaffold/tools.py`, `docs/D2a_tool_design.md`).** Scored the seven
+Problem A tools against the brief's three questions. `required_documents.json` was
+reachable by no tool; `check_coverage` now returns that field (move 2, not an
+eighth tool). `check_duplicate_claim` is the weakest yield in the set and the one
+tool beyond the brief's minimum — argued for moving out of the loop (move 3), not
+executed because five live runs were about to start. Five poka-yoke: unknown
+code/policy/tool raise named `ToolError`s; `check_duplicate_claim` refuses
+`claim_id`; `issue_decision_letter` enumerates `decision` and re-reads the claim
+to check `lines_resolved`.
+
+**Descriptors.** v2 carries the brief's six fields (typed signature, bad-value
+behaviour, measured size bound, irreversibility). v1 is frozen in
+`descriptors_v1.py`, selected with `config.PROMPT_VERSION`. Prefix ~980 tok (v1)
+vs ~2570 tok (v2). `check_coverage` tokens returned per call: mean 32.7 → 40.4.
+
+**PR #3** (`syw-fix-evidence-guard`): `check_evidence` counted a line awaiting a
+document as payable and would have wrongly escalated ~16% of the set on every
+backend. Three lines, merged by Harry after he re-ran the reproduction.
+
+**4 ASK cases** (CLM-9401–9404) plus scripts for CLM-8901.
+
+**Live battery (D5(b), this member's model).** `qwen/qwen3.8-flash`, v2, 25 cases,
+63 trials: **17 of 63 code-check pass (27%)**, US$0.124. Decision agreed on 47 of
+63 (75%) — most code-check fails are trigger-string mismatches. ASK family 7 of
+12. Results: `docs/evidence/live_results.json`. v1 arm not yet run.
+
+**Report:** drafted section 2 (`docs/report_section2.md`); D2(c) slot left for
+the loop owner.
+
+**Commits** (`git log --author=ywSun04`): `ea5a1d5`, `80c3213`, `7ac6b19`,
+`0ee20b1`, `74fa077`, `4ec8659`, `137ffa3`, `4154e8b`, `45ed266`, `8c498ec`,
+`7249421`, plus PR #3.
 
 ## 2 — Chan Hio Weng (Harry) — D3, D7
 
