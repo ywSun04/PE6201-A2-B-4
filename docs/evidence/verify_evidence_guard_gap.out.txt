@@ -1,0 +1,43 @@
+
+BACKEND=scripted  FREE, deterministic  |  PROBLEM=A  |  prompt=v2  |  model=(no model)  |  cap=8 turns  |  autonomy=confirm
+
+========================================================================
+  every case below is labelled 'request_document'
+========================================================================
+  case       before the fix             guardrails.py today       
+  ----------------------------------------------------------------
+  CLM-8901   escalate                   request_document           <- the three lines
+  CLM-9401   escalate                   request_document           <- the three lines
+  CLM-9402   escalate                   request_document           <- the three lines
+  CLM-9403   request_document           request_document           
+  CLM-9404   escalate                   request_document           <- the three lines
+
+  what the old guard said when it halted
+    CLM-8901   approved_total 0 does not match the recomputed 1150
+    CLM-9401   approved_total 180 does not match the recomputed 1330
+    CLM-9402   approved_total 0 does not match the recomputed 8200
+    CLM-9404   approved_total 0 does not match the recomputed 1150
+
+  correct before : 1 of 5
+  correct today  : 5 of 5
+
+
+    # guardrails.Guardrails.check_evidence, inside the per-line loop,
+    # directly after the `excluded` test:
+
+            cov = tools.check_coverage(code, policy_id)
+            if cov is None or cov["excluded"]:
+                continue
++           needed = cov.get("required_document")
++           if needed and needed not in set(claim.get("documents") or []):
++               continue      # the subject of an ask, not a settled line
+            if cov["requires_preauth"]:
+
+  CLM-9403 unchanged - the control. No required document on those
+  lines, so the added test never fires and the guard behaves
+  exactly as it always did.
+
+========================================================================
+  PASS · the guard settles all 5 correctly.
+========================================================================
+
