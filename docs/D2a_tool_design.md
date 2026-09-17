@@ -249,8 +249,8 @@ say the call is per-line, and does not carry `required_document` at all.
 | Metric | v1 | v2 | Status |
 |---|---|---|---|
 | **Tokens returned per call** | mean 32.7, max 38 | mean 40.4, max 45 | **Measured.** +24% per call; 315 tokens over the 41 calls a pass makes |
-| **Evaluation pass rate** | — | — | Pending the live battery |
-| **Guardrail cases passed** | — | — | Pending |
+| **Evaluation pass rate** | — | — | Not this file. A v1/v2 pair has to hold the model fixed. |
+| **Guardrail cases passed** | 10 of 12 (D3(b) checklist; gaps 9 and 12) | 9 of 9 (`verify_pokayoke.py`) | **Measured**, scripted. The two gaps are unknown code returning `None` and unknown tool escaping as `KeyError`. |
 
 The prefix cost is the honest problem here: **v2 is 2.6× v1**. It is not being trimmed
 before the runs, deliberately. Whether the extra prefix pays for itself is exactly what
@@ -267,7 +267,8 @@ filtered out, or a run stopped by a guard counts as a wrong answer.
 
 ## 6 · What is not done
 
-- **Live numbers.** Pass rate and guardrail cases passed for both arms need the battery.
+- **Live numbers.** Evaluation pass rate for a matched v1/v2 pair still needs
+  the same model on both arms. Guardrail cases are already measured scripted.
 - **`get_preauthorisation` returns `None` for an expired approval and for a valid one
   that was never granted.** Those are different facts leading to different decisions, and
   the tool cannot currently tell them apart — the same shape of defect as poka-yoke 1,

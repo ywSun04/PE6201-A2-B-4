@@ -10,8 +10,9 @@ descriptor rewrite measured. Drafted by Sun Yawen, ~360 words.
 saved — and are marked with a placeholder for whoever owns the loop. Section 2 cannot be
 handed to the report editor until that slot is filled.
 
-Numbers marked **[LIVE]** are waiting on the model battery. Everything else is measured
-and reproducible from `docs/evidence/`.
+Evaluation pass rate is the one empty row: a v1/v2 comparison has to hold the
+model fixed, and that pair is not in this file. Tokens returned and guardrail
+cases are measured and reproducible from `docs/evidence/`.
 
 ---
 
@@ -64,11 +65,13 @@ because whether it pays for itself is precisely what the comparison exists to me
 | Six-field contract | 3 of 6 | 6 of 6 |
 | Unknown code or policy | returns `None` | raises, naming it |
 | `required_document` reachable | no | yes |
-| Evaluation pass rate | **[LIVE — v1 not run yet]** | **17 of 63 trials (27%)** on `qwen/qwen3.8-flash`, 25 cases, 2026-09-17. Median 2 turns. See `docs/evidence/live_results.json`. Raw rate understates outcome-agreement: several escalate cases chose the right decision and failed only on the trigger string. |
-| Guardrail cases passed | **[LIVE — not this battery]** | Not run on live; Harry's 12 scripted guardrail cases remain the D3(b) measurement. |
+| Evaluation pass rate | — | — |
+| Guardrail cases passed | **10 of 12** on the D3(b) checklist, scripted, before the interface change. The two fails are case 9 (`check_coverage("99999", …)` returned `None`) and case 12 (unknown tool name escaped as a bare `KeyError`). | **9 of 9** in `docs/evidence/verify_pokayoke.py`, scripted. Replays those two calls plus seven further wrong ones (unknown policy, invented tool, `claim_id` as a duplicate key, partial duplicate match, bad arguments, non-enumerated decision, under-counted lines, unknown claim id). Each raises a named `ToolError`. |
 
-Both arms run on the same model, as the brief requires, so the difference is attributable
-to the descriptor and not to the model.
+Tokens returned and guardrail cases are scripted measurements of the tool
+interface, not of a model, so they do not mix vendors. The pass-rate row stays
+blank: putting a single-model v2 battery in the v2 cell would make the
+difference look like a descriptor result when the v1 cell has no matching run.
 
 **The tool set, scored** — full table with all seven tools in
 [`docs/D2a_tool_design.md`](D2a_tool_design.md).
@@ -92,6 +95,7 @@ to the descriptor and not to the model.
   section reads as one-sided with either one removed.
 - If the section runs long, the first sentence of each paragraph carries the claim; the
   rest is support and can be compressed.
-- `[LIVE]` cells must be filled before submission, and pass rates need guardrail halts
-  filtered out — a run stopped by a guard is not a wrong answer and counts as one if the
-  rate is taken raw.
+- The pass-rate row is empty on purpose. Do not fill the v2 cell with the
+  `qwen/qwen3.8-flash` battery (17 of 63): that run is v2 only. When a matched
+  pair exists, filter guardrail halts out of the rate — a run stopped by a
+  guard is not a wrong answer.
