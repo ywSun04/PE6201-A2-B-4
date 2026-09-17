@@ -103,21 +103,48 @@ thing in "missing" when you request, and {"clinic","date","time"} in
 
 
 def format_descriptor(d):
-    """One tool, as the model sees it.
+    """One tool, as the model sees it - the brief's six-field contract.
 
-    The SIX FIELDS are all here. Note that `failure` gets its own line
-    and is not buried - it is the field that most changes behaviour and
-    the one teams most often leave as 'returns null'.
+        NAME + SIGNATURE   with types, and what comes back
+        WHAT               one line: what this answers that nothing else does
+        INPUT              each argument, its type, AND WHAT A BAD VALUE DOES
+        RETURNS            the shape, AND A SIZE BOUND
+        FAILS WHEN         the named conditions for nothing, or an error
+        IRREVERSIBLE?      yes/no, and if yes the gate that covers it
+
+    The scaffold shipped six fields of its own - name, purpose, when,
+    args, returns, failure - which is six but not THESE six. Three of the
+    brief's were missing: the typed signature, the size bound on the
+    return, and irreversibility. They are added as `signature`,
+    `returns_bound` and `irreversible`.
+
+    `when` is kept even though the brief does not ask for it: it is what
+    tells the model which calls may share a turn, and D2(c)'s whole
+    saving rests on that.
+
+    FIELDS ARE RENDERED ONLY IF PRESENT, which matters for honesty as
+    much as for compatibility. descriptors_v1 has none of the three new
+    ones, and defaulting `irreversible` to "No" would make v1 state that
+    the gated write is reversible - a lie this file invented rather than
+    a weakness v1 actually had. v1's failing is that it is SILENT on the
+    question, so it renders silent.
     """
-    args = "\n".join("      %-16s %s" % (k, v) for k, v in d["args"].items())
-    return ("  %s\n"
-            "    purpose : %s\n"
-            "    when    : %s\n"
-            "    args    :\n%s\n"
-            "    returns : %s\n"
-            "    IF NOT FOUND : %s\n"
-            % (d["name"], d["purpose"], d["when"], args,
-               d["returns"], d["failure"]))
+    lines = ["  %s" % d.get("signature", d["name"])]
+    lines.append("    what     : %s" % d["purpose"])
+    if d.get("when"):
+        lines.append("    when     : %s" % d["when"])
+    lines.append("    input    :")
+    lines += ["      %-18s %s" % (k, v) for k, v in d["args"].items()] or \
+             ["      (none)"]
+
+    returns = d["returns"]
+    if d.get("returns_bound"):
+        returns += "\n               SIZE: %s" % d["returns_bound"]
+    lines.append("    returns  : %s" % returns)
+    lines.append("    fails    : %s" % d["failure"])
+    if d.get("irreversible"):
+        lines.append("    IRREVERSIBLE? %s" % d["irreversible"])
+    return "\n".join(lines) + "\n"
 
 
 def descriptor_set(version=None):

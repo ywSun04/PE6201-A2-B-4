@@ -105,6 +105,13 @@ class UnknownArguments(ToolError):
     """A real tool called with arguments that do not match its signature."""
 
 
+# The three outcomes of Problem A's routing table, and the only values
+# issue_decision_letter will write. Kept next to the exceptions because
+# it exists for the same reason they do: to make a wrong value refused
+# rather than recorded.
+DECISIONS = ("approve_in_principle", "request_document", "escalate")
+
+
 def _load(problem, table):
     """Read one JSON file, once, and keep it in memory.
 
@@ -687,7 +694,52 @@ def issue_decision_letter(claim_id, decision, lines_resolved, approved_total,
     `lines_resolved` is here on purpose: it forces the agent to state how
     many lines it actually disposed of, which makes "I only checked the
     first line" visible in the record instead of invisible.
+
+    ------------------------------------------------------------------
+    v2 · POKA-YOKE 4 and 5, both on the one call that cannot be undone.
+
+    4 · `decision` IS AN ENUMERATION, NOT A STRING. This is the brief's
+        own worked example - site: str becoming site: Literal[...] - and
+        it belongs here more than anywhere, because the code check
+        compares this field exactly. "approved" or "approve" sails
+        through a str parameter, writes an irreversible record, and then
+        fails the code check with no clue as to why. Three values are
+        legal and everything else is refused by name.
+
+    5 · `lines_resolved` IS CHECKED AGAINST THE CLAIM. Stating the number
+        made under-counting visible; comparing it makes under-counting
+        impossible. An agent that read one line of a three-line claim can
+        no longer record that it resolved the claim - and note the tool
+        re-reads the claim itself rather than trusting the argument,
+        which is the same reason Harry's evidence check re-derives totals
+        instead of believing them.
+
+    WHY THESE TWO AND NOT A LONGER LIST: this is the only irreversible
+    call in Problem A, so it is the only place where a wrong argument
+    cannot be walked back. Everything before it can be re-run harmlessly.
+    ------------------------------------------------------------------
     """
+    if decision not in DECISIONS:
+        raise UnknownArguments(
+            "not_a_decision",
+            "%r is not a decision. Exactly three are legal: %s."
+            % (decision, ", ".join(DECISIONS)))
+
+    claim = get_claim(claim_id)
+    if claim is None:
+        raise UnknownArguments(
+            "unknown_claim_id",
+            "%r is not a claim on file - refusing to write a decision "
+            "against an id that does not exist" % claim_id)
+
+    expected = len(claim["lines"])
+    if lines_resolved != expected:
+        raise UnknownArguments(
+            "lines_unresolved",
+            "%s has %d line(s) and you resolved %d. Every line needs its "
+            "own coverage check and its own disposition before this claim "
+            "can be decided." % (claim_id, expected, lines_resolved))
+
     return {"sent": True, "claim_id": claim_id, "decision": decision,
             "lines_resolved": lines_resolved,
             "approved_total": approved_total, "refused_total": refused_total}
@@ -806,12 +858,18 @@ DESCRIPTORS = {
     # ---- Problem A -------------------------------------------------
     "get_claim": {
         "name": "get_claim",
+        "signature": "get_claim(claim_id: str) -> Claim | None",
         "purpose": "Fetch the claim you have been asked to decide.",
         "when": "Turn 1, alone. Everything else needs the member, hospital "
                 "and line items it returns.",
-        "args": {"claim_id": "str, the case id you were given"},
+        "args": {"claim_id": "str, the case id you were given. An id that "
+                             "matches no claim returns None - that is a broken "
+                             "case, not one of the three outcomes."},
         "returns": "{claim_id, member_id, hospital_id, date_of_service, "
                    "narrative, documents[], lines[{code, amount}]}",
+        "returns_bound": "exactly 1 record, at most ~98 tokens. lines[] holds "
+                         "up to 4 entries and documents[] up to 2 in this data.",
+        "irreversible": "No - read only.",
         "failure": "Returns None when no claim has that id - a broken case. "
                    "TWO FIELDS MISREAD MORE THAN ANY OTHER. (1) `lines` is a "
                    "LIST: every line needs its own coverage check and its own "
@@ -828,13 +886,20 @@ DESCRIPTORS = {
     },
     "lookup_policy": {
         "name": "lookup_policy",
+        "signature": "lookup_policy(member_id: str) -> "
+                     "{member, policy, remaining: int} | None",
         "purpose": "The member's policy, and how much of the annual limit is "
                    "left.",
         "when": "After get_claim. Independent of the coverage checks and the "
                 "hospital lookup, so all of them fit in one turn.",
-        "args": {"member_id": "str, from the claim"},
+        "args": {"member_id": "str, from the claim. A member not on file "
+                              "returns None; passing the CLAIM id here also "
+                              "returns None, silently, so read the field name."},
         "returns": "{member: {...}, policy: {status, start_date, end_date, "
                    "annual_limit, used_to_date, exclusions[]}, remaining: int}",
+        "returns_bound": "exactly 1 record, at most ~110 tokens - the largest "
+                         "single observation in this tool set.",
+        "irreversible": "No - read only.",
         "failure": "Returns None when the member or policy does not exist. "
                    "USE `remaining`, not annual_limit - it is the limit minus "
                    "what is already spent. Three separate escalation reasons "
@@ -844,10 +909,15 @@ DESCRIPTORS = {
     },
     "lookup_hospital": {
         "name": "lookup_hospital",
+        "signature": "lookup_hospital(hospital_id: str) -> Hospital | None",
         "purpose": "Whether the hospital is on the insurer's panel.",
         "when": "After get_claim, alongside the other independent lookups.",
-        "args": {"hospital_id": "str, from the claim"},
+        "args": {"hospital_id": "str, from the claim. An unknown id returns "
+                                "None - it does not mean 'off panel'."},
         "returns": "{hospital_id, name, panel (bool), country}",
+        "returns_bound": "exactly 1 record, at most ~22 tokens - the cheapest "
+                         "call in the set.",
+        "irreversible": "No - read only.",
         "failure": "Returns None when the hospital does not exist. panel "
                    "false does NOT decide the claim - it changes what the "
                    "record must SAY, not what the decision is. Record it "
@@ -855,14 +925,26 @@ DESCRIPTORS = {
     },
     "check_coverage": {
         "name": "check_coverage",
+        "signature": "check_coverage(code: str, policy_id: str) -> Coverage"
+                     "   # raises UnknownCode | UnknownPolicy, never None",
         "purpose": "Whether ONE procedure code is payable under ONE policy.",
         "when": "ONCE PER LINE. A three-line claim needs three calls, and "
                 "they are independent, so they belong in the same turn.",
-        "args": {"code": "str, one line's procedure code",
-                 "policy_id": "str, REQUIRED, from lookup_policy"},
+        "args": {"code": "str, ONE line's procedure code. A code not in the "
+                         "catalogue RAISES UnknownCode naming it, rather than "
+                         "returning None - an invented code is a broken "
+                         "question, not a finding you may act on.",
+                 "policy_id": "str, REQUIRED, from lookup_policy. A policy not "
+                              "on file RAISES UnknownPolicy. It cannot be "
+                              "omitted: coverage without a policy is an answer "
+                              "about nothing."},
         "returns": "{code, description, requires_preauth (bool), excluded "
                    "(bool), exclusion_rule (str or None), required_document "
                    "(str or None)}",
+        "returns_bound": "exactly 1 record, at most ~45 tokens (v1 returned "
+                         "~38; the 7 is required_document). Called once per "
+                         "line, so a 4-line claim spends ~180.",
+        "irreversible": "No - read only.",
         "failure": "NEVER returns null. An unknown code or policy RAISES and "
                    "names what was not found - fix the call, do not decide "
                    "around it. THREE FIELDS DRIVE WHAT HAPPENS NEXT. "
@@ -877,13 +959,22 @@ DESCRIPTORS = {
     },
     "check_duplicate_claim": {
         "name": "check_duplicate_claim",
+        "signature": "check_duplicate_claim(member_id: str, hospital_id: str, "
+                     "date_of_service: str, lines: list[{code, amount}]) "
+                     "-> DecidedClaim | None",
         "purpose": "Whether this episode has already been decided.",
         "when": "Before issuing any decision.",
-        "args": {"member_id": "str, from the claim",
-                 "hospital_id": "str, from the claim",
-                 "date_of_service": "str, from the claim",
-                 "lines": "the claim's lines list, unchanged"},
+        "args": {"member_id": "str, from the claim. Omitting ANY of the four "
+                              "RAISES rather than matching on the rest.",
+                 "hospital_id": "str, from the claim.",
+                 "date_of_service": "str, from the claim.",
+                 "lines": "the claim's lines list, unchanged. Passing "
+                          "claim_id instead RAISES: a resubmission arrives "
+                          "with a new id, so matching on it finds nothing."},
         "returns": "the prior decided claim, or None",
+        "returns_bound": "at most 1 record, ~53 tokens. Never a list - the "
+                         "first exact match on all four facts, or null.",
+        "irreversible": "No - read only.",
         "failure": "Returns None when nothing matches - the normal case, "
                    "carry on. MATCH ON ALL FOUR FACTS. The claim id is NOT "
                    "one of them - passing it is REFUSED, because a "
@@ -894,15 +985,34 @@ DESCRIPTORS = {
     },
     "issue_decision_letter": {
         "name": "issue_decision_letter",
+        "signature": "issue_decision_letter(claim_id: str, decision: "
+                     "Literal['approve_in_principle','request_document',"
+                     "'escalate'], lines_resolved: int, approved_total: int, "
+                     "refused_total: int = 0) -> Receipt",
         "purpose": "Send the decision to the member. THE IRREVERSIBLE STEP.",
         "when": "Last, once every line has a disposition.",
-        "args": {"claim_id": "str, the case id",
-                 "decision": "str, one of the three outcomes",
-                 "lines_resolved": "int, how many lines you actually decided",
-                 "approved_total": "int, dollars approved",
+        "args": {"claim_id": "str, the case id. An id not on file RAISES - no "
+                             "decision is written against a claim that does "
+                             "not exist.",
+                 "decision": "one of exactly three values. Anything else - "
+                             "'approve', 'approved', 'decline' - RAISES. It is "
+                             "an enumeration, not free text.",
+                 "lines_resolved": "int, how many lines you decided. CHECKED "
+                                   "against the claim: if it does not equal "
+                                   "the number of lines, this RAISES and no "
+                                   "record is written.",
+                 "approved_total": "int, the total of the lines settled as "
+                                   "payable. For an ask, a line awaiting a "
+                                   "document is not settled and is not in it.",
                  "refused_total": "int, dollars refused (default 0)"},
         "returns": "{sent: true, claim_id, decision, lines_resolved, "
                    "approved_total, refused_total}",
+        "returns_bound": "exactly 1 receipt, ~35 tokens. It echoes what you "
+                         "sent; it is not a second opinion.",
+        "irreversible": "YES. Gated by guardrails.gate() - and before the gate "
+                        "is even offered to a human, check_evidence re-derives "
+                        "the totals from the tools and refuses a record the "
+                        "evidence does not support.",
         "failure": "This call is GATED and may be held for human approval. "
                    "If held, that is the correct outcome, not an error. "
                    "lines_resolved must equal the number of lines on the "
@@ -933,16 +1043,23 @@ DESCRIPTORS = {
     },
     "get_preauthorisation": {
         "name": "get_preauthorisation",
+        "signature": "get_preauthorisation(member_id: str, procedure_code: "
+                     "str, date_of_service: str) -> Preauth | None",
         "purpose": "Find a pre-authorisation covering one member for one "
                    "procedure on one date.",
         "when": "ONLY when check_coverage said requires_preauth is true. "
                 "Calling it for every line means you did not read the flag.",
         "args": {
-            "member_id": "str, from the claim",
+            "member_id": "str, from the claim. All THREE must match; a wrong "
+                         "value returns None rather than a near-match, so a "
+                         "null here can mean you asked wrongly.",
             "procedure_code": "str, the line's code",
             "date_of_service": "str date, from the claim - the approval must "
-                               "be valid ON this date",
+                               "be valid ON this date, between valid_from and "
+                               "valid_to inclusive at BOTH ends.",
         },
+        "returns_bound": "at most 1 record, ~32 tokens; null is 1 token.",
+        "irreversible": "No - read only.",
         "returns": "{preauth_id, member_id, procedure_code, valid_from, "
                    "valid_to} or None",
         "failure": "Returns None when no approval exists OR when one exists "

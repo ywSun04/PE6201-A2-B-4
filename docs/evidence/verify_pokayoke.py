@@ -92,6 +92,27 @@ def main():
                            {"claim_id": "CLM-8933"}))
 
     expect_refusal(
+        "5a · a decision that is not one of the three",
+        "ours: the brief's own example - site: str becoming a Literal",
+        tools.UnknownArguments, "not_a_decision",
+        lambda: tools.issue_decision_letter("CLM-8842", "approved", 3, 2180))
+
+    expect_refusal(
+        "5b · deciding a 3-line claim having resolved 1 line",
+        "ours: stating the count made it visible, checking it makes it "
+        "impossible",
+        tools.UnknownArguments, "lines_unresolved",
+        lambda: tools.issue_decision_letter("CLM-8842",
+                                            "approve_in_principle", 1, 900))
+
+    expect_refusal(
+        "5c · writing a decision against a claim that does not exist",
+        "ours: the one call that cannot be walked back, so it verifies first",
+        tools.UnknownArguments, "unknown_claim_id",
+        lambda: tools.issue_decision_letter("CLM-0000",
+                                            "approve_in_principle", 1, 0))
+
+    expect_refusal(
         "5 · a duplicate check on three of the four facts",
         "ours: the shortcut that wrongly escalates CLM-8850 and CLM-8960",
         tools.UnknownArguments, "incomplete_duplicate_check",
