@@ -1,0 +1,21 @@
+# Canonical names for the commit history.
+#
+# The brief grades contribution from commit history and requires that
+# CONTRIBUTIONS.md be corroborated by it. That only works if one person
+# reads as one person: commits made through the GitHub web interface
+# carry a different name and a noreply address from commits pushed from
+# a laptop, so `git shortlog -sn` splits one contributor into two.
+#
+# This file fixes the display only. No commit is rewritten, no hash
+# changes, and nobody has to re-clone.
+#
+#   git shortlog -sn        # now groups correctly
+#   git log --use-mailmap   # same, per commit
+#
+# Format:  Canonical Name <canonical@email> <other@email>
+#
+# Teammates: add your own line if your commits appear under more than
+# one name. Please only add your own.
+
+Sun Yawen <2965182494@qq.com> <2965182494@qq.com>
+Sun Yawen <2965182494@qq.com> <118269510+ywSun04@users.noreply.github.com>
