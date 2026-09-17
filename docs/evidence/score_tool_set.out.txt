@@ -1,0 +1,58 @@
+
+========================================================================
+  Q1 · WHICH CASES TURN ON THIS TOOL, out of 25
+  Q3 · WHAT ITS DESCRIPTOR COSTS, every turn, called or not
+========================================================================
+  tool                     cases    share   tokens    in brief's min set
+  ------------------------------------------------------------------
+  get_claim                25       100%    340       yes
+  check_coverage           25       100%    411       yes
+  lookup_policy            21       84%     260       yes
+  issue_decision_letter    13       52%     401       yes
+  get_preauthorisation     7        28%     295       yes
+  lookup_hospital          1        4%      170       yes
+  check_duplicate_claim    1        4%      299       NO - ours
+  ------------------------------------------------------------------
+  TOTAL PREFIX                              2176     
+
+========================================================================
+  THE NARROW ONES, named
+========================================================================
+
+  lookup_hospital - 1 case(s), 170 prefix tokens
+      CLM-8874
+      170 prefix tokens per case it decides
+
+  check_duplicate_claim - 1 case(s), 299 prefix tokens
+      CLM-8933
+      299 prefix tokens per case it decides
+
+  get_preauthorisation - 7 case(s), 295 prefix tokens
+      CLM-8842, CLM-8861, CLM-8888, CLM-8894, CLM-8925, CLM-9402, CLM-9403
+      42 prefix tokens per case it decides
+
+========================================================================
+  THE TOOL WE DID NOT ADD · move 2 against move 4
+========================================================================
+  Both deliver the same fact: which document a line needs.
+
+  move 4 · ship check_required_documents
+      197 tokens of descriptor, re-sent every turn whether or
+      not the line needs a document
+      4 turns x 25 cases x 3 trials = 59100 tokens a pass
+      and one extra call per line, so more turns, not fewer
+
+  move 2 · return more from check_coverage
+      0 tokens of descriptor - the tool was already there
+      measured across 41 calls = 315 tokens a pass
+      no extra call: the fact arrives in a turn already spent
+
+  59100 against 315 - about 188x - for the same fact.
+  And the prefix cost is the part that does not go away when
+  a case has no document requirement at all.
+
+========================================================================
+  Beyond the brief's minimum set:
+    check_duplicate_claim - 1 case(s) turn on it, 299 tokens a turn
+========================================================================
+
