@@ -55,7 +55,11 @@ def run_case(case_id, problem=None, approve=None, verbose=False):
                           if n in tools.DESCRIPTORS],
         system_prompt=prompt.build_system_prompt(problem))
 
-    transcript = []      # what the model would see
+    transcript = [
+        {"role": "user",
+         "content": "Decide case %s. Start with get_claim using that id."
+                    % case_id},
+    ]
     evidence = []        # every tool actually called, in order
 
     # TURNS ARE TOOL-CALLING TURNS. The concluding move - where the agent

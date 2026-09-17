@@ -31,8 +31,7 @@ def arm_live():
     config.MODEL = ASSIGNED
     config.API_KEY = os.environ["OPENROUTER_API_KEY"]
     config.PRICE_IN, config.PRICE_OUT = config.prices()
-    # Re-bind in backends/agent which already imported config - they
-    # hold the module object, so mutating attributes is enough.
+    config.ARMED_IN_MEMORY = True
 
 
 def main(argv):

@@ -55,6 +55,11 @@ PROBLEM = "A"
 # ─────────────────────────────────────────────────────────────────────
 PROMPT_VERSION = "v2"
 
+# Set True by run_live_battery.py so BACKEND can be "live" in memory
+# while the committed file stays "scripted". That mismatch is the
+# point, not a stale-bytecode accident.
+ARMED_IN_MEMORY = False
+
 # ─────────────────────────────────────────────────────────────────────
 # GUARDRAIL LIMITS (D3a). These are the code layer. Set them from
 # EVIDENCE, not from a round number - see D7. If your median run is 4
@@ -174,6 +179,8 @@ def _stale_bytecode_warning():
     out = []
     for name, live in (("PROBLEM", PROBLEM), ("BACKEND", BACKEND),
                        ("PROMPT_VERSION", PROMPT_VERSION)):
+        if name == "BACKEND" and ARMED_IN_MEMORY:
+            continue
         m = re.search(r'^%s\s*=\s*"([^"]*)"' % name, src, re.M)
         if m and m.group(1) != live:
             out.append("%s is %r in config.py but %r in memory"
