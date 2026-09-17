@@ -40,6 +40,21 @@ API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 PROBLEM = "A"
 
 # ─────────────────────────────────────────────────────────────────────
+# WHICH TOOL-DESCRIPTOR VERSION (D2b). This is the ONLY thing that
+# differs between the two arms of the descriptor experiment.
+#
+#   "v2"  tools.DESCRIPTORS - what we argue for. THE COMMITTED DEFAULT.
+#         check_coverage also returns `required_document` in this arm.
+#   "v1"  descriptors_v1.py - FROZEN 2026-09-17, the control arm.
+#         Member 6 runs this on the SAME MODEL Member 1 uses for v2;
+#         change the model as well and the comparison measures nothing.
+#
+# "v1" and "v2" are the same number of bytes, so the stale-bytecode trap
+# below applies to this setting exactly as it does to PROBLEM.
+# ─────────────────────────────────────────────────────────────────────
+PROMPT_VERSION = "v2"
+
+# ─────────────────────────────────────────────────────────────────────
 # GUARDRAIL LIMITS (D3a). These are the code layer. Set them from
 # EVIDENCE, not from a round number - see D7. If your median run is 4
 # turns and your worst legitimate run is 7, a cap of 8 is defensible
@@ -120,7 +135,8 @@ def _stale_bytecode_warning():
     except OSError:
         return ""
     out = []
-    for name, live in (("PROBLEM", PROBLEM), ("BACKEND", BACKEND)):
+    for name, live in (("PROBLEM", PROBLEM), ("BACKEND", BACKEND),
+                       ("PROMPT_VERSION", PROMPT_VERSION)):
         m = re.search(r'^%s\s*=\s*"([^"]*)"' % name, src, re.M)
         if m and m.group(1) != live:
             out.append("%s is %r in config.py but %r in memory"
@@ -140,7 +156,8 @@ def summary():
     one place every entry point already prints."""
     where = "FREE, deterministic" if BACKEND == "scripted" else "LIVE - this costs money"
     model = "(no model)" if BACKEND == "scripted" else MODEL
-    line = ("BACKEND=%s  %s  |  PROBLEM=%s  |  model=%s  |  "
+    line = ("BACKEND=%s  %s  |  PROBLEM=%s  |  prompt=%s  |  model=%s  |  "
             "cap=%d turns  |  autonomy=%s"
-            % (BACKEND, where, PROBLEM, model, MAX_TURNS, AUTONOMY))
+            % (BACKEND, where, PROBLEM, PROMPT_VERSION, model,
+               MAX_TURNS, AUTONOMY))
     return line + _stale_bytecode_warning()

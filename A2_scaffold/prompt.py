@@ -120,7 +120,36 @@ def format_descriptor(d):
                d["returns"], d["failure"]))
 
 
-def build_system_prompt(problem=None):
+def descriptor_set(version=None):
+    """The descriptors for the version being measured. THE ONLY SWITCH.
+
+    v2  tools.DESCRIPTORS      - the set we argue for, and the default
+    v1  descriptors_v1.py      - FROZEN 2026-09-17, Member 6's control arm
+
+    Two things and only two things read config.PROMPT_VERSION: this
+    function, and check_coverage's return shape in tools.py. D2(b) asks
+    for a v1 and a v2 of one tool's DESCRIPTOR AND ITS RETURN SHAPE, so
+    those two have to move together or the comparison is measuring a
+    mixture. Nothing else in the codebase branches on version.
+
+    The import is deferred because descriptors_v1 imports tools, and
+    tools is already imported here - loading it at module scope would
+    make the cycle real rather than merely possible.
+    """
+    version = version or getattr(config, "PROMPT_VERSION", "v2")
+    if version == "v1":
+        import descriptors_v1
+        return descriptors_v1.DESCRIPTORS, "v1"
+    if version != "v2":
+        raise SystemExit(
+            "\n  config.PROMPT_VERSION is %r. It must be 'v1' or 'v2'.\n"
+            "  A typo here would silently run the wrong arm of the D2(b)\n"
+            "  experiment and the numbers would look perfectly normal.\n"
+            % version)
+    return tools.DESCRIPTORS, "v2"
+
+
+def build_system_prompt(problem=None, version=None):
     """Assemble everything the model is told, once, before turn 1.
 
     THREE PARTS, and you should be able to say why each is there:
@@ -133,9 +162,10 @@ def build_system_prompt(problem=None):
     measured.
     """
     problem = problem or config.PROBLEM
+    descriptors, _ = descriptor_set(version)
     names = sorted(tools.REGISTRY[problem])
-    described = [tools.DESCRIPTORS[n] for n in names if n in tools.DESCRIPTORS]
-    undescribed = [n for n in names if n not in tools.DESCRIPTORS]
+    described = [descriptors[n] for n in names if n in descriptors]
+    undescribed = [n for n in names if n not in descriptors]
 
     parts = [RULES[problem], "", "TOOLS AVAILABLE", ""]
     parts += [format_descriptor(d) for d in described]
@@ -152,7 +182,7 @@ def build_system_prompt(problem=None):
     return "\n".join(parts)
 
 
-def audit(problem=None):
+def audit(problem=None, version=None):
     """Print the prompt, and what it cost you in tokens, and what is missing.
 
     Run this whenever you change a descriptor. The token count is the
@@ -160,13 +190,15 @@ def audit(problem=None):
     to earn that on every single turn of every single run.
     """
     problem = problem or config.PROBLEM
-    text = build_system_prompt(problem)
+    descriptors, version = descriptor_set(version)
+    text = build_system_prompt(problem, version)
     names = sorted(tools.REGISTRY[problem])
-    missing = [n for n in names if n not in tools.DESCRIPTORS]
+    missing = [n for n in names if n not in descriptors]
 
     print("=" * 68)
-    print("  SYSTEM PROMPT - Problem %s - what the model is told before turn 1"
-          % problem)
+    print("  SYSTEM PROMPT - Problem %s - PROMPT_VERSION = %s"
+          % (problem, version))
+    print("  what the model is told before turn 1")
     print("=" * 68)
     print(text)
     print("=" * 68)
