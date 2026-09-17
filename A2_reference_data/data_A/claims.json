@@ -397,5 +397,78 @@
         "amount": 620
       }
     ]
+  },
+  {
+    "claim_id": "CLM-9401",
+    "member_id": "M-5502",
+    "hospital_id": "H-114",
+    "date_of_service": "2026-09-21",
+    "narrative": "Consultation and a colonoscopy on the same visit.",
+    "documents": [
+      "discharge_summary"
+    ],
+    "lines": [
+      {
+        "code": "99213",
+        "amount": 180
+      },
+      {
+        "code": "45378",
+        "amount": 1150
+      }
+    ]
+  },
+  {
+    "claim_id": "CLM-9402",
+    "member_id": "M-5502",
+    "hospital_id": "H-114",
+    "date_of_service": "2026-09-22",
+    "narrative": "Knee replacement, planned earlier in the year.",
+    "documents": [
+      "itemised_bill"
+    ],
+    "lines": [
+      {
+        "code": "27447",
+        "amount": 8200
+      }
+    ]
+  },
+  {
+    "claim_id": "CLM-9403",
+    "member_id": "M-7401",
+    "hospital_id": "H-207",
+    "date_of_service": "2026-09-22",
+    "narrative": "Knee arthroscopy. Approval paperwork was submitted for this.",
+    "documents": [
+      "itemised_bill",
+      "discharge_summary"
+    ],
+    "lines": [
+      {
+        "code": "29881",
+        "amount": 1950
+      }
+    ]
+  },
+  {
+    "claim_id": "CLM-9404",
+    "member_id": "M-6118",
+    "hospital_id": "H-207",
+    "date_of_service": "2026-09-23",
+    "narrative": "Skin smoothing procedure and a colonoscopy.",
+    "documents": [
+      "discharge_summary"
+    ],
+    "lines": [
+      {
+        "code": "31255",
+        "amount": 300
+      },
+      {
+        "code": "45378",
+        "amount": 1150
+      }
+    ]
   }
 ]

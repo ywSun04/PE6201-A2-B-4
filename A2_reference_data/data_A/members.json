@@ -40,5 +40,11 @@
     "name": "Ahmad Faizal",
     "policy_id": "POL-8302",
     "join_date": "2025-09-01"
+  },
+  {
+    "member_id": "M-7401",
+    "name": "Devi Ramasamy",
+    "policy_id": "POL-8401",
+    "join_date": "2026-01-01"
   }
 ]

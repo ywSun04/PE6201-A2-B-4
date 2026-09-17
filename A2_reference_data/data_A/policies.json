@@ -87,5 +87,15 @@
     "annual_limit": 8000,
     "used_to_date": 500,
     "exclusions": []
+  },
+  {
+    "policy_id": "POL-8401",
+    "product": "Shield Plus",
+    "status": "active",
+    "start_date": "2026-01-01",
+    "end_date": "2026-12-31",
+    "annual_limit": 12000,
+    "used_to_date": 0,
+    "exclusions": []
   }
 ]
