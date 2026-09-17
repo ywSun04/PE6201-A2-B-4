@@ -4,6 +4,10 @@ Per member, per the Team Declaration's strand assignments (section 4). Each pers
 in their own row — that is what makes this corroborate the commit history rather than
 restate it. `git log --author="<github-username>"` reproduces every row below.
 
+**AI tools.** Brief section 6, condition 3: sources and tools used are attributed. If you
+used an AI coding assistant for your strand, name it and how in your own section below —
+see #2 for the shape.
+
 | # | Name | GitHub | Strand(s) owned | Summary |
 |---|---|---|---|---|
 | 1 | Sun Yawen | ywSun04 | D2(a), D2(b) — tool design, descriptors, v1/v2 rewrite | *fill in* |
@@ -14,6 +18,14 @@ restate it. `git log --author="<github-username>"` reproduces every row below.
 | 6 | Kou Huilin | khl789 | D4 (data) — fixtures, extra cases, answer key | *fill in* |
 
 ## 2 — Chan Hio Weng (Harry) — D3, D7
+
+**AI tools used:** Claude Code (Anthropic), as a coding assistant throughout D3/D7 -
+guardrail design, the two reproduced-failure demos, and this report section. Every commit
+below carries a `Co-Authored-By: Claude` trailer for the same reason, visible in the
+commit history GitHub renders. I can explain every block I submitted; the design
+decisions (which guard catches which attack, why failure 2 sits at the interface, the
+`check_evidence`/`check_duplicate` coupling bug found and fixed while building failure 1)
+were mine, argued through and verified by re-running the code before each one landed.
 
 **Guardrails (`A2_scaffold/guardrails.py`).** Added three guards beyond the scaffold's
 four: an evidence check that re-derives the payable total from `tools.py` before
