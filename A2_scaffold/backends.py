@@ -620,11 +620,18 @@ def _parse_move(text):
             raw = raw[4:]
         raw = raw.strip()
     try:
-        return json.loads(raw)
+        parsed = json.loads(raw)
     except json.JSONDecodeError:
         return {"final": {"decision": "escalate",
                           "reason": "model did not return parseable JSON"},
                 "thought": "unparseable: %s" % (text or "")[:200]}
+    if isinstance(parsed, list) and parsed and isinstance(parsed[0], dict):
+        parsed = parsed[0]
+    if not isinstance(parsed, dict):
+        return {"final": {"decision": "escalate",
+                          "reason": "model did not return a JSON object"},
+                "thought": "not an object: %s" % (text or "")[:200]}
+    return parsed
 
 
 def _live_call(messages):
@@ -648,6 +655,11 @@ def _live_call(messages):
         "model": config.MODEL,
         "messages": messages,
         "temperature": 0,
+        # Forces a JSON object. Without it, qwen/qwen3.8-flash sometimes
+        # replies in prose (its reasoning tokens leak into content) and
+        # the run becomes an unparseable escalate. Scripted never hits
+        # this path.
+        "response_format": {"type": "json_object"},
     }).encode()
     req = urllib.request.Request(
         config.BASE_URL.rstrip("/") + "/chat/completions",
