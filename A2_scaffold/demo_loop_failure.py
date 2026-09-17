@@ -39,13 +39,21 @@ from guardrails import Guardrails
 # Works for either problem. The default follows config.PROBLEM.
 CASES = {"B": "REF-5602", "A": "CLM-8842"}
 
-# Every Problem A case that currently has a script in backends.py. This is a
-# PRELIMINARY set (7 cases: the shipped CLM-8842 + Harry's 6), not the full
-# 30-50 case D4 evaluation set - most of the team's cases have no script yet.
-# Re-run this once the whole team's cases are scripted; nothing below changes
-# except the numbers.
-SCRIPTED_PROBLEM_A = ["CLM-8842", "CLM-9301", "CLM-9302", "CLM-9303",
-                     "CLM-9304", "CLM-9305", "CLM-9306"]
+def scripted_problem_a_cases():
+    """Every Problem A case ANYONE has scripted, right now - not a list Harry
+    maintains by hand. Re-reads backends.SCRIPTS and the D4 work queue
+    (data_A/claims.json) each time this runs, so a teammate pushing a new
+    script changes this function's answer with no edit here required.
+    Intersecting with the queue is what excludes REF-5602 (Problem B)
+    automatically - it is a script, but not a Problem A claim id.
+
+    STILL PRELIMINARY relative to D4's 30-50 case target: this is whatever
+    subset of the full evaluation set happens to have a script today. It
+    is not a fixed number to update by hand; it is a fixed QUESTION whose
+    answer grows as the team scripts more cases.
+    """
+    queue = set(harness.load_cases(problem="A"))
+    return sorted(cid for cid in backends.SCRIPTS if cid in queue)
 
 
 def turn_distribution(label, case_ids=None, problem="A"):
@@ -53,7 +61,7 @@ def turn_distribution(label, case_ids=None, problem="A"):
     evaluation set - median, worst case, and how many runs hit the step
     cap. ONE number is not a distribution, which is why this is separate
     from the single-case before/after demo below."""
-    case_ids = case_ids or SCRIPTED_PROBLEM_A
+    case_ids = case_ids or scripted_problem_a_cases()
     results, _ = harness.run_set(case_ids=case_ids, problem=problem)
     turns = [r["record"]["turns"] for r in results]
     hit_cap = sum(1 for r in results if r["record"]["stopped_by"] == "step_cap")
@@ -194,7 +202,8 @@ def main(case=None, problem=None):
     if after_set["passed"] == baseline["passed"] == after_set["total"]:
         print("  Pass rate held at %d/%d with the guard removed. Expected: none of"
               % (after_set["passed"], after_set["total"]))
-        print("  these 7 scripts repeat a call on their own, so de-dup was never")
+        print("  these %d scripts repeat a call on their own, so de-dup was never"
+              % len(scripted_problem_a_cases()))
         print("  the thing keeping them correct - it only matters for a run that")
         print("  ALREADY tends to circle, which is exactly what %s demonstrates "
               "above." % CASE)
@@ -204,10 +213,12 @@ def main(case=None, problem=None):
                  after_set["passed"], after_set["total"]))
         print("  which case changed before concluding anything about the cap.")
     print()
-    print("  CAVEAT: these 7 cases are what has a script today - Harry's 6 plus")
-    print("  the shipped CLM-8842. Re-run this file once the team's full 30-50")
-    print("  case set is scripted; the method above does not change, the")
-    print("  numbers will.")
+    print("  CAVEAT: %d cases have a script today (see scripted_problem_a_cases())"
+          % len(scripted_problem_a_cases()))
+    print("  out of the ~30-50 D4 targets. This number is read fresh, not")
+    print("  maintained by hand - it will already be different by the time")
+    print("  the team finishes scripting the full evaluation set. The method")
+    print("  above does not change; only the count and the numbers will.")
     print("=" * 68)
     print()
     print("  Now do this for YOUR second failure, in the TOOL INTERFACE or")
