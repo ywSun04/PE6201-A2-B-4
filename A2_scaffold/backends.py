@@ -26,6 +26,8 @@ moves is how you test the parts you wrote.
 ====================================================================
 """
 import json
+import time
+import urllib.error
 import urllib.request
 
 import config
@@ -666,8 +668,34 @@ def _live_call(messages):
         data=body,
         headers={"Authorization": "Bearer " + config.API_KEY,
                  "Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=90) as r:
-        payload = json.load(r)
+    # 429 is expected on a cheap-tier key after a few smoke tests;
+    # dying on the first one would void the battery. Back off and retry.
+    last_err = None
+    payload = None
+    for attempt in range(6):
+        try:
+            with urllib.request.urlopen(req, timeout=90) as r:
+                payload = json.load(r)
+            break
+        except urllib.error.HTTPError as err:
+            last_err = err
+            if err.code not in (429, 502, 503, 504) or attempt == 5:
+                raise
+            wait = min(60, 2 ** (attempt + 1))
+            retry_after = err.headers.get("Retry-After")
+            if retry_after:
+                try:
+                    wait = max(wait, int(float(retry_after)))
+                except ValueError:
+                    pass
+            time.sleep(wait)
+        except urllib.error.URLError as err:
+            last_err = err
+            if attempt == 5:
+                raise
+            time.sleep(min(60, 2 ** (attempt + 1)))
+    if payload is None:
+        raise last_err
     usage = payload.get("usage") or {}
     return (payload["choices"][0]["message"]["content"],
             (usage.get("prompt_tokens", 0) or 0,
