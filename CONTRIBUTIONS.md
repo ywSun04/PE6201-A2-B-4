@@ -59,7 +59,7 @@ the loop owner.
 
 **Commits** (`git log --author=ywSun04`): `ea5a1d5`, `80c3213`, `7ac6b19`,
 `0ee20b1`, `74fa077`, `4ec8659`, `137ffa3`, `4154e8b`, `45ed266`, `8c498ec`,
-`7249421`, plus PR #3.
+`7249421`, `c742146`, `36dcf98`, plus PR #3.
 
 ## 2 — Chan Hio Weng (Harry) — D3, D7
 
