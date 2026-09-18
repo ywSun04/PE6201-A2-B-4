@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
 PE6201 · A2 · PROBLEM A — reference dataset generator
-=====================================================
-Health-insurance claim first response.
+==============================================Health-insurance claim first response.
 
 WHAT THIS IS
     A small, deterministic set of records standing in for the systems of record a
@@ -623,9 +622,47 @@ EXTRA_CLAIMS = [               # {"claim_id", "member_id", "hospital_id",
      "date_of_service": "2026-12-31",
      "narrative": "Knee replacement on the final day of authorisation.",
      "documents": ["itemised_bill", "discharge_summary"],
-     "lines": [{"code": "27447", "amount": 8200}]}
+     "lines": [{"code": "27447", "amount": 8200}]},
+    # KOUHUILIN: one true duplicate and three near misses.
+    {"claim_id": "CLM-9601", "member_id": "M-6118", "hospital_id": "H-207",
+     "date_of_service": "2026-09-20",
+     "narrative": "Resubmitting because I have not received a response.",
+     "documents": ["itemised_bill"],
+     "lines": [{"code": "99213", "amount": 210}, {"code": "80053", "amount": 70}]},
+    {"claim_id": "CLM-9602", "member_id": "M-5502", "hospital_id": "H-207",
+     "date_of_service": "2026-09-24",
+     "narrative": "Routine outpatient consultation.",
+     "documents": ["itemised_bill"],
+     "lines": [{"code": "99213", "amount": 220}]},
+    {"claim_id": "CLM-9603", "member_id": "M-6118", "hospital_id": "H-207",
+     "date_of_service": "2026-09-25",
+     "narrative": "Outpatient review for persistent knee discomfort.",
+     "documents": ["itemised_bill"],
+     "lines": [{"code": "99213", "amount": 200}]},
+    {"claim_id": "CLM-9604", "member_id": "M-6118", "hospital_id": "H-207",
+     "date_of_service": "2026-09-26",
+     "narrative": "Routine outpatient consultation.",
+     "documents": ["itemised_bill"],
+     "lines": [{"code": "99213", "amount": 190}]},
 ]
-EXTRA_DECIDED = []             # {"claim_id", "member_id", "hospital_id",
+EXTRA_DECIDED = [
+    {"claim_id": "CLM-9591", "member_id": "M-6118", "hospital_id": "H-207",
+     "date_of_service": "2026-09-20",
+     "lines": [{"code": "99213", "amount": 210}, {"code": "80053", "amount": 70}],
+     "decision": "approve_in_principle", "decided_on": "2026-09-22"},
+    {"claim_id": "CLM-9592", "member_id": "M-6118", "hospital_id": "H-207",
+     "date_of_service": "2026-09-24",
+     "lines": [{"code": "99213", "amount": 220}],
+     "decision": "approve_in_principle", "decided_on": "2026-09-25"},
+    {"claim_id": "CLM-9593", "member_id": "M-6118", "hospital_id": "H-114",
+     "date_of_service": "2026-09-25",
+     "lines": [{"code": "99213", "amount": 200}],
+     "decision": "approve_in_principle", "decided_on": "2026-09-26"},
+    {"claim_id": "CLM-9594", "member_id": "M-6118", "hospital_id": "H-207",
+     "date_of_service": "2026-09-26",
+     "lines": [{"code": "99213", "amount": 180}],
+     "decision": "approve_in_principle", "decided_on": "2026-09-27"},
+]             # {"claim_id", "member_id", "hospital_id",
                                #  "date_of_service", "lines", "decision", "decided_on"}
 EXTRA_REQUIRED_DOCS = {}       # "procedure_code": "document_name"
 
