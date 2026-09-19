@@ -331,5 +331,85 @@
       "H-330 recorded as non-panel"
     ],
     "note": "Four lines: three payable, one excluded. Valid pre-authorisation and non-panel hospital must be recorded."
+  },
+  {
+    "case_id": "CLM-9501",
+    "expected_decision": "approve_in_principle",
+    "family": "annual_limit_exactly_remaining",
+    "must_record": [
+      "claim total 600",
+      "600 remaining on POL-4102 (6000 - 5400)",
+      "that equality with the remaining amount is payable"
+    ],
+    "note": "Iris boundary case. All three lines are covered, the itemised bill for 45378 is attached, and the claim equals (rather than exceeds) the remaining annual limit. A check using total >= remaining wrongly escalates."
+  },
+  {
+    "case_id": "CLM-9502",
+    "expected_decision": "escalate",
+    "trigger": "annual_limit_exceeded",
+    "family": "annual_limit_one_dollar_over",
+    "must_record": [
+      "claim total 601 (201 + 100 + 300)",
+      "600 remaining on POL-4102 (6000 - 5400)",
+      "that every individual line is below 600 and only the sum exceeds it"
+    ],
+    "note": "Iris boundary case. The immediate counterpart to CLM-9501: one dollar over the same remaining amount. It rejects a per-line limit check and a comparison against the annual limit instead of the remainder."
+  },
+  {
+    "case_id": "CLM-9503",
+    "expected_decision": "approve_in_principle",
+    "family": "policy_end_date_inclusive",
+    "must_record": [
+      "date of service 2026-12-31",
+      "POL-4102 runs through 2026-12-31 inclusively",
+      "approved_total 180"
+    ],
+    "note": "Iris boundary case. The service date equals the policy end_date, so it is covered. A strict date_of_service < end_date check wrongly escalates."
+  },
+  {
+    "case_id": "CLM-9504",
+    "expected_decision": "escalate",
+    "trigger": "outside_policy_dates",
+    "family": "policy_day_after_end_date",
+    "must_record": [
+      "date of service 2027-01-01",
+      "POL-4102 ends 2026-12-31",
+      "that status remains active but date coverage has ended"
+    ],
+    "note": "Iris boundary case. The immediate counterpart to CLM-9503. Policy status alone is insufficient: the date is one day after end_date and must escalate."
+  },
+  {
+    "case_id": "CLM-9505",
+    "expected_decision": "approve_in_principle",
+    "family": "preauth_start_date_inclusive",
+    "must_record": [
+      "PA-5702 cited for line 27447",
+      "validity begins 2026-07-01 and includes the date of service",
+      "approved_total 8200"
+    ],
+    "note": "Iris boundary case. The service date equals PA-5702 valid_from. The policy is already active and both documents are attached, so a strict date_of_service > valid_from check is wrong."
+  },
+  {
+    "case_id": "CLM-9506",
+    "expected_decision": "request_document",
+    "missing": "pre-authorisation reference for line 27447, valid on 2026-06-30",
+    "family": "preauth_day_before_valid_from",
+    "must_record": [
+      "the missing pre-authorisation named for line 27447",
+      "the date it must be valid on (2026-06-30)",
+      "that the attached discharge summary does not replace pre-authorisation"
+    ],
+    "note": "Iris boundary case. The immediate counterpart to CLM-9505: PA-5702 starts on 2026-07-01, one day after service. The valid-on-date lookup must therefore request a current pre-authorisation."
+  },
+  {
+    "case_id": "CLM-9507",
+    "expected_decision": "approve_in_principle",
+    "family": "preauth_end_date_inclusive",
+    "must_record": [
+      "PA-5702 cited for line 27447",
+      "validity runs through 2026-12-31 inclusively",
+      "approved_total 8200"
+    ],
+    "note": "Iris boundary case. The service date equals PA-5702 valid_to. POL-6001 continues through 2027-05-31, so only an incorrect strict date_of_service < valid_to check rejects this claim."
   }
 ]

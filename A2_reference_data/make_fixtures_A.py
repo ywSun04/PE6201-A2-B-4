@@ -560,6 +560,70 @@ EXTRA_CLAIMS = [               # {"claim_id", "member_id", "hospital_id",
                {"code": "62480", "amount": 900},
                {"code": "80053", "amount": 100},
                {"code": "31255", "amount": 250}]},
+
+    # ---- Iris · boundary data -------------------------------------------
+    # These cases isolate inclusive boundaries in annual-limit, policy-date and
+    # pre-authorisation validity rules. Each adjacent pair changes one fact only.
+    #
+    # CLM-9501 · exact remaining amount: POL-4102 has 600 remaining
+    # (6000 - 5400). Equality must approve; an implementation using >= fails.
+    {"claim_id": "CLM-9501", "member_id": "M-3390", "hospital_id": "H-207",
+     "date_of_service": "2026-10-01",
+     "narrative": "Consultation, blood panel and colonoscopy on one visit.",
+     "documents": ["itemised_bill"],
+     "lines": [{"code": "99213", "amount": 200},
+               {"code": "80053", "amount": 100},
+               {"code": "45378", "amount": 300}]},  # total = 600
+
+    # CLM-9502 · one dollar over the same remaining amount. Every individual
+    # line is within 600, so the aggregate, not a per-line test, must escalate.
+    {"claim_id": "CLM-9502", "member_id": "M-3390", "hospital_id": "H-207",
+     "date_of_service": "2026-10-02",
+     "narrative": "Consultation, blood panel and colonoscopy on one visit.",
+     "documents": ["itemised_bill"],
+     "lines": [{"code": "99213", "amount": 201},
+               {"code": "80053", "amount": 100},
+               {"code": "45378", "amount": 300}]},  # total = 601
+
+    # CLM-9503 · end_date is inclusive. Service on POL-4102's final covered
+    # date must approve; a strict < end_date implementation wrongly escalates.
+    {"claim_id": "CLM-9503", "member_id": "M-3390", "hospital_id": "H-207",
+     "date_of_service": "2026-12-31",
+     "narrative": "Final-day outpatient consultation.",
+     "documents": ["itemised_bill"],
+     "lines": [{"code": "99213", "amount": 180}]},
+
+    # CLM-9504 · the immediate date after the same policy ends. Status remains
+    # active, so the date comparison alone must cause escalation.
+    {"claim_id": "CLM-9504", "member_id": "M-3390", "hospital_id": "H-207",
+     "date_of_service": "2027-01-01",
+     "narrative": "Outpatient consultation after policy expiry.",
+     "documents": ["itemised_bill"],
+     "lines": [{"code": "99213", "amount": 180}]},
+
+    # CLM-9505 · PA-5702 begins on this exact date. The policy is already live,
+    # all documents are supplied and the line is under its 15,000 annual limit.
+    {"claim_id": "CLM-9505", "member_id": "M-5502", "hospital_id": "H-207",
+     "date_of_service": "2026-07-01",
+     "narrative": "Knee replacement on the first day of authorisation.",
+     "documents": ["itemised_bill", "discharge_summary"],
+     "lines": [{"code": "27447", "amount": 8200}]},
+
+    # CLM-9506 · immediate counterpart to CLM-9505: identical in every respect
+    # except service is one day before PA-5702 becomes valid.
+    {"claim_id": "CLM-9506", "member_id": "M-5502", "hospital_id": "H-207",
+     "date_of_service": "2026-06-30",
+     "narrative": "Knee replacement one day before authorisation starts.",
+     "documents": ["itemised_bill", "discharge_summary"],
+     "lines": [{"code": "27447", "amount": 8200}]},
+
+    # CLM-9507 · PA-5702's end date is inclusive. The policy itself runs through
+    # 2027-05-31, so only an incorrect strict < valid_to test rejects this case.
+    {"claim_id": "CLM-9507", "member_id": "M-5502", "hospital_id": "H-207",
+     "date_of_service": "2026-12-31",
+     "narrative": "Knee replacement on the final day of authorisation.",
+     "documents": ["itemised_bill", "discharge_summary"],
+     "lines": [{"code": "27447", "amount": 8200}]}
 ]
 EXTRA_DECIDED = []             # {"claim_id", "member_id", "hospital_id",
                                #  "date_of_service", "lines", "decision", "decided_on"}
