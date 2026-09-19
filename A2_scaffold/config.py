@@ -53,7 +53,7 @@ PROBLEM = "A"
 # "v1" and "v2" are the same number of bytes, so the stale-bytecode trap
 # below applies to this setting exactly as it does to PROBLEM.
 # ─────────────────────────────────────────────────────────────────────
-PROMPT_VERSION = "v2"
+PROMPT_VERSION = "v1"
 
 # Set True by run_live_battery.py so BACKEND can be "live" in memory
 # while the committed file stays "scripted". That mismatch is the
