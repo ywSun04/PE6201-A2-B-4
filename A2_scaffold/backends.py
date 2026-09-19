@@ -525,6 +525,213 @@ SCRIPTS = {
          "thought": "Two findings pulling different ways: the ask is the "
                     "outcome, the refusal still has to appear in the record."},
     ],
+
+    # ---------------------------------------------------------------
+    # Iris's cases · CLM-9501 to CLM-9507
+    # ---------------------------------------------------------------
+    # These three pairs exercise inclusive limits and authorisation dates.
+    # Each positive case follows the full evidence path; each negative
+    # counterpart stops at the first policy or pre-authorisation fact that
+    # decides it. They are deliberately deterministic so D5(a) can be run
+    # offline from a clean clone.
+
+    # CLM-9501 - the combined amount equals, rather than exceeds, the policy
+    # remaining amount. A >= comparison is the defect this boundary catches.
+    "CLM-9501": [
+        {"thought": "Fetch the claim first. The three line items are needed "
+                    "before any coverage or duplicate check can be formed.",
+         "calls": [("get_claim", {"claim_id": "CLM-9501"})]},
+        {"thought": "Policy, hospital, duplicate check and one coverage check "
+                    "per line are independent after the claim is known.",
+         "calls": [("lookup_policy", {"member_id": "M-3390"}),
+                   ("check_coverage", {"code": "99213", "policy_id": "POL-4102"}),
+                   ("check_coverage", {"code": "80053", "policy_id": "POL-4102"}),
+                   ("check_coverage", {"code": "45378", "policy_id": "POL-4102"}),
+                   ("lookup_hospital", {"hospital_id": "H-207"}),
+                   ("check_duplicate_claim", {
+                       "member_id": "M-3390", "hospital_id": "H-207",
+                       "date_of_service": "2026-10-01",
+                       "lines": [{"code": "99213", "amount": 200},
+                                 {"code": "80053", "amount": 100},
+                                 {"code": "45378", "amount": 300}]})]},
+        {"thought": "All lines are covered and the itemised bill is attached. "
+                    "The total is exactly the 600 remaining, which is payable.",
+         "calls": [("issue_decision_letter", {
+             "claim_id": "CLM-9501", "decision": "approve_in_principle",
+             "lines_resolved": 3, "approved_total": 600})]},
+        {"final": {
+            "decision": "approve_in_principle",
+            "reason": "Claim total 600 (200 + 100 + 300) equals the 600 "
+                      "remaining on POL-4102 (6000 - 5400), so equality is "
+                      "payable. All three lines are covered and the itemised "
+                      "bill for 45378 is attached.",
+         },
+         "thought": "The boundary is equality, not an excess."},
+    ],
+
+    # CLM-9502 - the immediate counterpart to CLM-9501: one dollar over the
+    # remaining annual amount, so the policy alone decides the case.
+    "CLM-9502": [
+        {"thought": "Fetch the claim first so the line amounts are evidence, "
+                    "not an assumed total.",
+         "calls": [("get_claim", {"claim_id": "CLM-9502"})]},
+        {"thought": "The policy's computed remaining amount decides this "
+                    "counterfactual before any line can be settled.",
+         "calls": [("lookup_policy", {"member_id": "M-3390"})]},
+        {"final": {
+            "decision": "escalate", "trigger": "annual_limit_exceeded",
+            "reason": "Claim total 601 (201 + 100 + 300) exceeds the 600 "
+                      "remaining on POL-4102 (6000 - 5400). Every individual "
+                      "line is below 600; only their sum exceeds it. "
+                      "escalate_to human claims assessor.",
+         },
+         "thought": "The comparison is against remaining, not annual_limit."},
+    ],
+
+    # CLM-9503 - policy end_date is inclusive.
+    "CLM-9503": [
+        {"thought": "Fetch the claim and its date of service first.",
+         "calls": [("get_claim", {"claim_id": "CLM-9503"})]},
+        {"thought": "Policy, coverage, hospital and duplicate checks are all "
+                    "independent once the claim has been fetched.",
+         "calls": [("lookup_policy", {"member_id": "M-3390"}),
+                   ("check_coverage", {"code": "99213", "policy_id": "POL-4102"}),
+                   ("lookup_hospital", {"hospital_id": "H-207"}),
+                   ("check_duplicate_claim", {
+                       "member_id": "M-3390", "hospital_id": "H-207",
+                       "date_of_service": "2026-12-31",
+                       "lines": [{"code": "99213", "amount": 180}]})]},
+        {"thought": "The service date equals POL-4102's final covered date, "
+                    "so the interval includes it and the line is payable.",
+         "calls": [("issue_decision_letter", {
+             "claim_id": "CLM-9503", "decision": "approve_in_principle",
+             "lines_resolved": 1, "approved_total": 180})]},
+        {"final": {
+            "decision": "approve_in_principle",
+            "reason": "Date of service 2026-12-31 is the inclusive end date: "
+                      "POL-4102 runs through 2026-12-31 inclusively. The 99213 "
+                      "line is covered and approved_total is 180.",
+         },
+         "thought": "A strict before-end-date test would be wrong."},
+    ],
+
+    # CLM-9504 - the immediate date after the same policy expires.
+    "CLM-9504": [
+        {"thought": "Fetch the claim first to verify the service date.",
+         "calls": [("get_claim", {"claim_id": "CLM-9504"})]},
+        {"thought": "Status is not sufficient; inspect the policy dates.",
+         "calls": [("lookup_policy", {"member_id": "M-3390"})]},
+        {"final": {
+            "decision": "escalate", "trigger": "outside_policy_dates",
+            "reason": "POL-4102 remains active, but the date of service "
+                      "2027-01-01 is one day after its 2026-12-31 end date. "
+                      "Coverage has ended. escalate_to human claims assessor.",
+         },
+         "thought": "The active status does not override the date window."},
+    ],
+
+    # CLM-9505 - PA-5702 valid_from is inclusive.
+    "CLM-9505": [
+        {"thought": "Fetch the claim first. The procedure, documents and "
+                    "service date are all inputs to the evidence checks.",
+         "calls": [("get_claim", {"claim_id": "CLM-9505"})]},
+        {"thought": "Policy, coverage, hospital and duplicate checks can run "
+                    "together after the claim is known.",
+         "calls": [("lookup_policy", {"member_id": "M-5502"}),
+                   ("check_coverage", {"code": "27447", "policy_id": "POL-6001"}),
+                   ("lookup_hospital", {"hospital_id": "H-207"}),
+                   ("check_duplicate_claim", {
+                       "member_id": "M-5502", "hospital_id": "H-207",
+                       "date_of_service": "2026-07-01",
+                       "lines": [{"code": "27447", "amount": 8200}]})]},
+        {"thought": "Coverage requires pre-authorisation, so it must be checked "
+                    "after coverage identifies that dependency.",
+         "calls": [("get_preauthorisation", {"member_id": "M-5502",
+                                             "procedure_code": "27447",
+                                             "date_of_service": "2026-07-01"})]},
+        {"thought": "PA-5702 begins on this exact service date and both required "
+                    "documents are attached, so the line is settled.",
+         "calls": [("issue_decision_letter", {
+             "claim_id": "CLM-9505", "decision": "approve_in_principle",
+             "lines_resolved": 1, "approved_total": 8200})]},
+        {"final": {
+            "decision": "approve_in_principle",
+            "reason": "27447 is covered and PA-5702 is valid from "
+                      "2026-07-01 inclusive, the date of service. The itemised "
+                      "bill and discharge summary are attached; approved_total 8200.",
+         },
+         "thought": "Authorisation starts on, not after, valid_from."},
+    ],
+
+    # CLM-9506 - PA-5702 starts one day after the claim, so the correct
+    # outcome is a request for evidence rather than a refusal.
+    "CLM-9506": [
+        {"thought": "Fetch the claim first.",
+         "calls": [("get_claim", {"claim_id": "CLM-9506"})]},
+        {"thought": "Gather the independent policy, coverage, hospital and "
+                    "duplicate facts before the dependent authorisation lookup.",
+         "calls": [("lookup_policy", {"member_id": "M-5502"}),
+                   ("check_coverage", {"code": "27447", "policy_id": "POL-6001"}),
+                   ("lookup_hospital", {"hospital_id": "H-207"}),
+                   ("check_duplicate_claim", {
+                       "member_id": "M-5502", "hospital_id": "H-207",
+                       "date_of_service": "2026-06-30",
+                       "lines": [{"code": "27447", "amount": 8200}]})]},
+        {"thought": "27447 needs an authorisation valid on the service date, "
+                    "not merely an authorisation that exists later.",
+         "calls": [("get_preauthorisation", {"member_id": "M-5502",
+                                             "procedure_code": "27447",
+                                             "date_of_service": "2026-06-30"})]},
+        {"thought": "No pre-authorisation is valid on 2026-06-30. The documents "
+                    "do not replace that evidence, so make one clear request.",
+         "calls": [("issue_decision_letter", {
+             "claim_id": "CLM-9506", "decision": "request_document",
+             "lines_resolved": 1, "approved_total": 0})]},
+        {"final": {
+            "decision": "request_document",
+            "missing": "pre-authorisation reference for line 27447, valid on "
+                       "2026-06-30",
+            "reason": "27447 is covered and both required documents are attached, "
+                      "but PA-5702 starts on 2026-07-01. No pre-authorisation "
+                      "valid on 2026-06-30 was found; the attached discharge "
+                      "summary does not replace pre-authorisation. Request its "
+                      "reference for line 27447.",
+         },
+         "thought": "Missing authorisation evidence is an ask, not a refusal."},
+    ],
+
+    # CLM-9507 - PA-5702 valid_to is inclusive.
+    "CLM-9507": [
+        {"thought": "Fetch the claim first.",
+         "calls": [("get_claim", {"claim_id": "CLM-9507"})]},
+        {"thought": "Policy, coverage, hospital and duplicate checks are "
+                    "independent after the claim is fetched.",
+         "calls": [("lookup_policy", {"member_id": "M-5502"}),
+                   ("check_coverage", {"code": "27447", "policy_id": "POL-6001"}),
+                   ("lookup_hospital", {"hospital_id": "H-207"}),
+                   ("check_duplicate_claim", {
+                       "member_id": "M-5502", "hospital_id": "H-207",
+                       "date_of_service": "2026-12-31",
+                       "lines": [{"code": "27447", "amount": 8200}]})]},
+        {"thought": "Coverage requires a pre-authorisation, so check whether "
+                    "PA-5702 includes this final day.",
+         "calls": [("get_preauthorisation", {"member_id": "M-5502",
+                                             "procedure_code": "27447",
+                                             "date_of_service": "2026-12-31"})]},
+        {"thought": "PA-5702 remains valid through 2026-12-31 inclusive and "
+                    "all documents are present, so settle the line.",
+         "calls": [("issue_decision_letter", {
+             "claim_id": "CLM-9507", "decision": "approve_in_principle",
+             "lines_resolved": 1, "approved_total": 8200})]},
+        {"final": {
+            "decision": "approve_in_principle",
+            "reason": "27447 is covered and PA-5702 is cited for line 27447, "
+                      "valid through 2026-12-31 inclusive, the date of service. "
+                      "The itemised bill and discharge summary are attached; "
+                      "approved_total 8200.",
+         },
+         "thought": "Authorisation ends after, not before, valid_to."},
+    ],
 }
 
 

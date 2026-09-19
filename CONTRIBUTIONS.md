@@ -14,7 +14,7 @@ see #2 for the shape.
 | 2 | Chan Hio Weng (Harry) | harry00001177 | D3, D7 — guardrails and two reproduced failures | see below |
 | 3 | Liu Zeyuan | Lizzy-808 | D0, D6, D5(b) v1 — cost model, v1 battery, report/video | *fill in* |
 | 4 | Mohanarangan Preethi | preethi1522 | D1, D2(c) — agent loop, tool implementation, parallel calls | *fill in* |
-| 5 | Zhang Yizhuo | waterrrr0924 | D4, D5(a) — evaluation harness, scripted run | *fill in* |
+| 5 | Zhang Yizhuo (Iris) | waterrrr0924 | D4, D5(a) — evaluation harness, scripted run | see below |
 | 6 | Kou Huilin | khl789 | D4 (data), D5(b) — fixtures, answer key, Mistral live battery | see below |
 ## 1 — Sun Yawen — D2(a), D2(b)
 
@@ -113,3 +113,26 @@ adding the `required_document` field).
 **Judgement check.** I manually reviewed one judgement entry for each of the 40 cases against its pre-written `must_record` requirements. None of the recorded reasons satisfied every required item, so the judgement result was 0 of 40. Some trials passed the automated decision/trigger check but had no written reason, so they did not pass the independent judgement check.
 
 **Artefacts:** `docs/evidence/run_live_battery_kou.py` and `docs/evidence/live_results_kou_v2.json`.
+
+## 5 — Zhang Yizhuo (Iris) — D4, D5(a)
+
+**AI tools used:** Codex (OpenAI) assisted with fixture construction, deterministic replay
+scripts, and local validation. The resulting case boundaries, answer-key labels, and the
+decision paths recorded below are committed under `waterrrr0924` and reproducible from a
+clean clone.
+
+**D4 fixtures and answer key.** Added seven Problem A boundary cases, CLM-9501–CLM-9507,
+with matching expected outcomes. They test equality versus a one-dollar annual-limit excess,
+the inclusive policy end date and the day after it, and both inclusive endpoints of PA-5702
+with the immediately preceding invalid date. The fixtures keep all references valid and do
+not alter instructor rows.
+
+**D5(a) offline scripted evaluation.** Added deterministic replay paths for all seven Iris
+cases in `A2_scaffold/backends.py`. The committed default stays `BACKEND = "scripted"`, so
+`python3 A2_scaffold/run_eval.py` needs neither an API key nor network access. On the
+40-case frozen data set, the default replay covers the 19 cases that have scripts, including
+these seven; ordinary cases run once and negative cases run three times. The integrity checker
+passes before the replay, and its output is reproducible from a clean clone.
+
+**Commits** (`git log --author=waterrrr0924`): `e80979e`, `9ff7153`, `edd26c3`, `2f3587f`,
+`49643f6`, plus the scripted-replay update for CLM-9501–CLM-9507.
