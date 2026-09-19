@@ -15,8 +15,7 @@ see #2 for the shape.
 | 3 | Liu Zeyuan | Lizzy-808 | D0, D6, D5(b) v1 — cost model, v1 battery, report/video | *fill in* |
 | 4 | Mohanarangan Preethi | preethi1522 | D1, D2(c) — agent loop, tool implementation, parallel calls | *fill in* |
 | 5 | Zhang Yizhuo | waterrrr0924 | D4, D5(a) — evaluation harness, scripted run | *fill in* |
-| 6 | Kou Huilin | khl789 | D4 (data) — fixtures, extra cases, answer key | *fill in* |
-
+| 6 | Kou Huilin | khl789 | D4 (data), D5(b) — fixtures, answer key, Mistral live battery | see below |
 ## 1 — Sun Yawen — D2(a), D2(b)
 
 **AI tools used:** Cursor (Grok 4.6) as a coding assistant for the tool layer,
@@ -102,3 +101,15 @@ passing the code check.
 `7edd380`, `2c9a06c`, `85d0870`, plus review and merge of PR #3
 (`syw-fix-evidence-guard`, Sun Yawen's fix to a gap in the evidence check she found while
 adding the `required_document` field).
+
+## 6 — Kou Huilin — D4 (data), D5(b)
+
+**AI tools used:** ChatGPT/Codex was used to help interpret the repository instructions, prepare the member-specific live-battery runner, inspect errors, and guide validation. I executed the commands and OpenRouter run myself, checked the generated files, and manually graded all 40 judgement-queue entries against the pre-written `must_record` requirements.
+
+**Evaluation cases (D4).** Added four duplicates/history cases, CLM-9601–CLM-9604: one true duplicate and three near misses differing respectively by member, hospital, and line amount. Added the matching history rows CLM-9591–CLM-9594 to `EXTRA_DECIDED`, consolidated the cases into `EXTRA_CLAIMS`, and added their hand-written labels to `expected_outcomes_A.json`. These changes were merged in PR #4. The final Problem A set contains 40 cases, and `check_my_data.py` reports that the data hangs together.
+
+**Live battery (D5(b)).** Ran `mistralai/mistral-small-3.2-24b-instruct` through OpenRouter with the shared v2 prompt and the final 40-case evaluation set. Negative cases received three trials and ordinary ACT cases one trial, producing 86 trials in total. The automated code check passed 6 of 86 trials (6.98%); median tool-calling turns were 2, and the runner recorded US$0.042586. The run contained 71 `unknown_policy_id` stops and 9 captured live-call/harness failures: five `ValueError: too many values to unpack (expected 2)` and four `AttributeError: 'str' object has no attribute 'items'`. These observed failures were retained without changing the shared prompt, data, or answer key to suit this model.
+
+**Judgement check.** I manually reviewed one judgement entry for each of the 40 cases against its pre-written `must_record` requirements. None of the recorded reasons satisfied every required item, so the judgement result was 0 of 40. Some trials passed the automated decision/trigger check but had no written reason, so they did not pass the independent judgement check.
+
+**Artefacts:** `docs/evidence/run_live_battery_kou.py` and `docs/evidence/live_results_kou_v2.json`.
