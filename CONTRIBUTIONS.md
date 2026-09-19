@@ -97,10 +97,34 @@ the fix belongs at the interface, not in loop control or the prompt.
 escalates, all labelled from Appendix A's routing table before any run, scripted and
 passing the code check.
 
+**Live battery (D5(b)).** Ran `google/gemini-3.8-flash` through OpenRouter with the shared
+v2 prompt on the frozen 40-case set: 86 trials, **8 of 86 code-check pass (9%)**, US$1.038,
+median 2.0 turns, worst case 5, no step-cap hits. That headline number is misleading on its
+own, so it is split below rather than reported alone:
+
+| | trials | share |
+|---|---|---|
+| Response was not parseable JSON (`response_format` requested, not honoured), fell back to `escalate` | 68 | 79% |
+| Completed reasoning, wrong decision | 10 | 12% |
+| Completed reasoning, correct decision | 8 | 9% |
+
+Restricted to the 18 trials that actually completed (excluding the 68 parse failures), the
+pass rate is **8/18 = 44%** — a materially different picture from the 9% headline, and the
+comparable figure to quote against the other five models' batteries. The parse-failure mode
+matches the same category Sun Yawen found on `qwen/qwen3.8-flash` (reasoning tokens leaking
+into content instead of the requested JSON object) — a different model hitting the same
+underlying compliance gap, not a bug introduced by this run. Not corrected here: `backends.py`
+is shared and several batteries (Sun Yawen, Kou Huilin, Liu Zeyuan, Preethi) had already run
+against its current form: changing the live-call/parse logic now would make this run
+incomparable with theirs, which the brief requires to avoid ("same commit" across all v2
+runners).
+
+Artefacts: `docs/evidence/run_live_battery_harry.py`, `docs/evidence/live_results_harry.json`.
+
 **Report:** drafted section 5 (`docs/report_section5.md`).
 
 **Commits** (`git log --author=harry00001177`): `b90b2bd`, `6d5bb96`, `97977d9`, `eb2de02`,
-`7edd380`, `2c9a06c`, `85d0870`, plus review and merge of PR #3
+`7edd380`, `2c9a06c`, `85d0870`, `bef74df`, plus review and merge of PR #3
 (`syw-fix-evidence-guard`, Sun Yawen's fix to a gap in the evidence check she found while
 adding the `required_document` field).
 
