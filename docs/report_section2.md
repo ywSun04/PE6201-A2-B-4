@@ -6,13 +6,12 @@ sits in a table and the prose is spent on the argument.
 This file holds the **D2(a) and D2(b)** prose — the tool set, what was cut, and what the
 descriptor rewrite measured. Drafted by Sun Yawen, ~360 words.
 
-**The last ~90 words belong to D2(c)** — the dependency rule and what parallel calling
-saved — and are marked with a placeholder for whoever owns the loop. Section 2 cannot be
-handed to the report editor until that slot is filled.
+**The last ~90 words are D2(c)** (Preethi; Problem A `CLM-8842`). D2(a) and
+D2(b) below are Sun Yawen's.
 
-Evaluation pass rate is the one empty row: a v1/v2 comparison has to hold the
-model fixed, and that pair is not in this file. Tokens returned and guardrail
-cases are measured and reproducible from `docs/evidence/`.
+The pass-rate row is the matched `openai/gpt-4o-mini` pair on the frozen
+40-case / 86-trial set. Tokens returned and guardrail cases are scripted
+measurements from `docs/evidence/`.
 
 ---
 
@@ -63,13 +62,14 @@ D2(c) – Parallel tool calling. Tool calls are grouped only when neither call r
 | Six-field contract | 3 of 6 | 6 of 6 |
 | Unknown code or policy | returns `None` | raises, naming it |
 | `required_document` reachable | no | yes |
-| Evaluation pass rate | — | — |
+| Evaluation pass rate | **17 of 86** (19.8%). `openai/gpt-4o-mini`, frozen 40-case set, prompt v1. Liu Zeyuan, `docs/evidence/live_results_liu_v1.json`. | **31 of 86** (36.0%). Same model, same 40 cases and 86 trials, prompt v2. Preethi, PR #6. |
 | Guardrail cases passed | **10 of 12** on the D3(b) checklist, scripted, before the interface change. The two fails are case 9 (`check_coverage("99999", …)` returned `None`) and case 12 (unknown tool name escaped as a bare `KeyError`). | **9 of 9** in `docs/evidence/verify_pokayoke.py`, scripted. Replays those two calls plus seven further wrong ones (unknown policy, invented tool, `claim_id` as a duplicate key, partial duplicate match, bad arguments, non-enumerated decision, under-counted lines, unknown claim id). Each raises a named `ToolError`. |
 
 Tokens returned and guardrail cases are scripted measurements of the tool
-interface, not of a model, so they do not mix vendors. The pass-rate row stays
-blank: putting a single-model v2 battery in the v2 cell would make the
-difference look like a descriptor result when the v1 cell has no matching run.
+interface, not of a model, so they do not mix vendors. The pass-rate row is
+the matched live pair: same model, same 40 cases and 86 trials, descriptors
+the only change (Liu v1 vs Preethi v2). Do not substitute the qwen v2
+battery — that run is a different model.
 
 **The tool set, scored** — full table with all seven tools in
 [`docs/D2a_tool_design.md`](D2a_tool_design.md).
@@ -93,7 +93,7 @@ difference look like a descriptor result when the v1 cell has no matching run.
   section reads as one-sided with either one removed.
 - If the section runs long, the first sentence of each paragraph carries the claim; the
   rest is support and can be compressed.
-- The pass-rate row is empty on purpose. Do not fill the v2 cell with the
-  `qwen/qwen3.8-flash` battery (17 of 63): that run is v2 only. When a matched
-  pair exists, filter guardrail halts out of the rate — a run stopped by a
-  guard is not a wrong answer.
+- The pass-rate row is the matched `openai/gpt-4o-mini` pair (17/86 vs 31/86).
+  Do not replace either cell with the `qwen/qwen3.8-flash` battery (19 of 86):
+  that run is a different model. These are automated code-check rates, not
+  human judgement.

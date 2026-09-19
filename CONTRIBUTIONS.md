@@ -12,7 +12,7 @@ see #2 for the shape.
 |---|---|---|---|---|
 | 1 | Sun Yawen | ywSun04 | D2(a), D2(b) — tool design, descriptors, v1/v2 rewrite | see below |
 | 2 | Chan Hio Weng (Harry) | harry00001177 | D3, D7 — guardrails and two reproduced failures | see below |
-| 3 | Liu Zeyuan | Lizzy-808 | D0, D6, D5(b) v1 — cost model, v1 battery, report/video | *fill in* |
+| 3 | Liu Zeyuan | Lizzy-808 | D0, D6, D5(b) v1 — cost model, v1 battery, report/video | see below |
 | 4 | Mohanarangan Preethi | preethi1522 | D1, D2(c) — agent loop, tool implementation, parallel calls | *fill in* |
 | 5 | Zhang Yizhuo (Iris) | waterrrr0924 | D4, D5(a) — evaluation harness, scripted run | see below |
 | 6 | Kou Huilin | khl789 | D4 (data), D5(b) — fixtures, answer key, Mistral live battery | see below |
@@ -55,8 +55,8 @@ backend. Three lines, merged by Harry after he re-ran the reproduction.
 Results: `docs/evidence/live_results.json`. v1 is Liu's matched gpt-4o-mini arm,
 not this model.
 
-**Report:** drafted section 2 (`docs/report_section2.md`); D2(c) slot left for
-the loop owner.
+**Report:** drafted section 2 (`docs/report_section2.md`); D2(c) filled by
+Preethi. Matched pass-rate row is Liu v1 17/86 vs Preethi v2 31/86.
 
 **Commits** (`git log --author=ywSun04`): `ea5a1d5`, `80c3213`, `7ac6b19`,
 `0ee20b1`, `74fa077`, `4ec8659`, `137ffa3`, `4154e8b`, `45ed266`, `8c498ec`,
@@ -162,3 +162,17 @@ passes before the replay, and its output is reproducible from a clean clone.
 
 **Commits** (`git log --author=waterrrr0924`): `e80979e`, `9ff7153`, `edd26c3`, `2f3587f`,
 `49643f6`, plus the scripted-replay update for CLM-9501–CLM-9507.
+
+## 3 — Liu Zeyuan — D0, D6, D5(b)
+
+**AI tools used:** ChatGPT/Codex (OpenAI) was used as a coding and writing assistant to guide the Git workflow, prepare the isolated V1 runner and offline judgement helper, calculate evaluation statistics, and draft the D0 and D6 report sections. I personally ran the live evaluation, checked the saved evidence, completed the 40-case human judgement review, and verified the final figures before submission. No API key was stored in the repository.
+
+**D5(b) matched V1 evaluation.** Ran `openai/gpt-4o-mini` with prompt v1 on the frozen 40-case Problem A evaluation set. The battery completed 86 trials without cherry-picking or rerunning failed cases. The automated code check passed 17 of 86 trials (19.8%), with a median of 3 turns, 359,061 input tokens, 18,728 output tokens, and a total model cost of US$0.065094. Evidence is stored in `docs/evidence/live_results_liu_v1.json`.
+
+**Human judgement review.** Reviewed the recorded reasoning for all 40 cases against the required reasoning points. One reason met all requirements and 39 did not. The review was performed offline and saved alongside the V1 evidence.
+
+**D0 — Why an agent?** Drafted `docs/report_section0.md`, explaining why a bounded tool-using agent is appropriate for multi-step claim adjudication, including dynamic dependencies, auditability, and the requirement for human oversight.
+
+**D6 — Cost to serve.** Drafted `docs/report_section6.md` using the matched V1 and V2 results. The comparison covers model cost, tokens, turns, automated pass rate, human review, and a provisional break-even analysis.
+
+**Pull request:** PR #8.
