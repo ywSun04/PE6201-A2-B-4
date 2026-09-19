@@ -128,6 +128,7 @@ def data_root():
 PRICES = {
     "openai/gpt-4o-mini":                       (0.150, 0.600),
     "qwen/qwen3.8-flash":                        (0.150, 0.470),
+    "google/gemini-3.8-flash":                   (0.750, 3.750),  # Harry, D5(b)
     "meta-llama/llama-3.3-70b-instruct":         (0.100, 0.320),
     "mistralai/mistral-small-3.2-24b-instruct":  (0.094, 0.250),
     "deepseek/deepseek-chat":                    (0.257, 1.029),
