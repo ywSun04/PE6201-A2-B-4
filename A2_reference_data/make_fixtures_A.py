@@ -559,7 +559,49 @@ EXTRA_CLAIMS = [               # {"claim_id", "member_id", "hospital_id",
      "lines": [{"code": "47120", "amount": 1200},
                {"code": "62480", "amount": 900},
                {"code": "80053", "amount": 100},
-               {"code": "31255", "amount": 250}]},
+               {"code": "31255", "amount": 250}]},,
+
+    # ---- Member 4 · boundary data ---------------------------------------
+    # These four cases pair the two inclusive boundaries in the policy rule:
+    # remaining annual limit (claim total <= remaining) and coverage dates
+    # (start_date <= date_of_service <= end_date). They use a single policy so
+    # only one boundary changes per pair.
+    #
+    # CLM-9201 · exact remaining amount: POL-4102 has 600 remaining
+    # (6000 - 5400). Equality must approve; an implementation using >= fails.
+    {"claim_id": "CLM-9201", "member_id": "M-3390", "hospital_id": "H-207",
+     "date_of_service": "2026-10-01",
+     "narrative": "Consultation, blood panel and colonoscopy on one visit.",
+     "documents": ["itemised_bill"],
+     "lines": [{"code": "99213", "amount": 200},
+               {"code": "80053", "amount": 100},
+               {"code": "45378", "amount": 300}]},  # total = 600
+
+    # CLM-9202 · one dollar over the same remaining amount. Every individual
+    # line is within 600, so the aggregate, not a per-line test, must escalate.
+    {"claim_id": "CLM-9202", "member_id": "M-3390", "hospital_id": "H-207",
+     "date_of_service": "2026-10-02",
+     "narrative": "Consultation, blood panel and colonoscopy on one visit.",
+     "documents": ["itemised_bill"],
+     "lines": [{"code": "99213", "amount": 201},
+               {"code": "80053", "amount": 100},
+               {"code": "45378", "amount": 300}]},  # total = 601
+
+    # CLM-9203 · end_date is inclusive. Service on POL-4102's final covered
+    # date must approve; a strict < end_date implementation wrongly escalates.
+    {"claim_id": "CLM-9203", "member_id": "M-3390", "hospital_id": "H-207",
+     "date_of_service": "2026-12-31",
+     "narrative": "Final-day outpatient consultation.",
+     "documents": ["itemised_bill"],
+     "lines": [{"code": "99213", "amount": 180}]},
+
+    # CLM-9204 · the immediate date after the same policy ends. Status remains
+    # active, so the date comparison alone must cause escalation.
+    {"claim_id": "CLM-9204", "member_id": "M-3390", "hospital_id": "H-207",
+     "date_of_service": "2027-01-01",
+     "narrative": "Outpatient consultation after policy expiry.",
+     "documents": ["itemised_bill"],
+     "lines": [{"code": "99213", "amount": 180}]}
 ]
 EXTRA_DECIDED = []             # {"claim_id", "member_id", "hospital_id",
                                #  "date_of_service", "lines", "decision", "decided_on"}
