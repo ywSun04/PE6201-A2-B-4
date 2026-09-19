@@ -560,5 +560,136 @@
         "amount": 250
       }
     ]
+  },
+  {
+    "claim_id": "CLM-9501",
+    "member_id": "M-3390",
+    "hospital_id": "H-207",
+    "date_of_service": "2026-10-01",
+    "narrative": "Consultation, blood panel and colonoscopy on one visit.",
+    "documents": [
+      "itemised_bill"
+    ],
+    "lines": [
+      {
+        "code": "99213",
+        "amount": 200
+      },
+      {
+        "code": "80053",
+        "amount": 100
+      },
+      {
+        "code": "45378",
+        "amount": 300
+      }
+    ]
+  },
+  {
+    "claim_id": "CLM-9502",
+    "member_id": "M-3390",
+    "hospital_id": "H-207",
+    "date_of_service": "2026-10-02",
+    "narrative": "Consultation, blood panel and colonoscopy on one visit.",
+    "documents": [
+      "itemised_bill"
+    ],
+    "lines": [
+      {
+        "code": "99213",
+        "amount": 201
+      },
+      {
+        "code": "80053",
+        "amount": 100
+      },
+      {
+        "code": "45378",
+        "amount": 300
+      }
+    ]
+  },
+  {
+    "claim_id": "CLM-9503",
+    "member_id": "M-3390",
+    "hospital_id": "H-207",
+    "date_of_service": "2026-12-31",
+    "narrative": "Final-day outpatient consultation.",
+    "documents": [
+      "itemised_bill"
+    ],
+    "lines": [
+      {
+        "code": "99213",
+        "amount": 180
+      }
+    ]
+  },
+  {
+    "claim_id": "CLM-9504",
+    "member_id": "M-3390",
+    "hospital_id": "H-207",
+    "date_of_service": "2027-01-01",
+    "narrative": "Outpatient consultation after policy expiry.",
+    "documents": [
+      "itemised_bill"
+    ],
+    "lines": [
+      {
+        "code": "99213",
+        "amount": 180
+      }
+    ]
+  },
+  {
+    "claim_id": "CLM-9505",
+    "member_id": "M-5502",
+    "hospital_id": "H-207",
+    "date_of_service": "2026-07-01",
+    "narrative": "Knee replacement on the first day of authorisation.",
+    "documents": [
+      "itemised_bill",
+      "discharge_summary"
+    ],
+    "lines": [
+      {
+        "code": "27447",
+        "amount": 8200
+      }
+    ]
+  },
+  {
+    "claim_id": "CLM-9506",
+    "member_id": "M-5502",
+    "hospital_id": "H-207",
+    "date_of_service": "2026-06-30",
+    "narrative": "Knee replacement one day before authorisation starts.",
+    "documents": [
+      "itemised_bill",
+      "discharge_summary"
+    ],
+    "lines": [
+      {
+        "code": "27447",
+        "amount": 8200
+      }
+    ]
+  },
+  {
+    "claim_id": "CLM-9507",
+    "member_id": "M-5502",
+    "hospital_id": "H-207",
+    "date_of_service": "2026-12-31",
+    "narrative": "Knee replacement on the final day of authorisation.",
+    "documents": [
+      "itemised_bill",
+      "discharge_summary"
+    ],
+    "lines": [
+      {
+        "code": "27447",
+        "amount": 8200
+      }
+    ]
   }
 ]
