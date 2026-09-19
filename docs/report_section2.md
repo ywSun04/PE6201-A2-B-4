@@ -48,9 +48,15 @@ count it was handed. Those hold when the model changes; an instruction does not.
 honest cost is the prefix — v2 is 2.6× v1, and we did not trim it before the battery,
 because whether it pays for itself is precisely what the comparison exists to measure.
 
-> **[D2(c) — ~90 words, owner of the loop]** State the dependency rule, then what
-> parallel calling saved: turns and tokens, sequential against grouped, on the same
-> cases, with the pass rate alongside to show correctness did not move.
+**D2(c) – Parallel tool calling.** Calls are grouped only when neither call
+requires the other call's output; dependent or irreversible actions remain sequential.
+For REF-5602, `check_referral` runs first, while `check_duplicate_claim` and
+`lookup_patient` share the next turn. The two independent `get_clinic_slots` searches
+also share one turn, but `book_slot` runs separately after a suitable slot is known.
+The same six tool calls therefore complete in four model turns instead of six, saving
+two turns (33%) and avoiding two repeated prompt/context exchanges. The final decision
+and tool evidence remain unchanged, demonstrating that grouping improves efficiency
+without changing correctness.
 
 ---
 
