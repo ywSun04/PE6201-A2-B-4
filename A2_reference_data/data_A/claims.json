@@ -691,5 +691,73 @@
         "amount": 8200
       }
     ]
+  },
+  {
+    "claim_id": "CLM-9601",
+    "member_id": "M-6118",
+    "hospital_id": "H-207",
+    "date_of_service": "2026-09-20",
+    "narrative": "Resubmitting because I have not received a response.",
+    "documents": [
+      "itemised_bill"
+    ],
+    "lines": [
+      {
+        "code": "99213",
+        "amount": 210
+      },
+      {
+        "code": "80053",
+        "amount": 70
+      }
+    ]
+  },
+  {
+    "claim_id": "CLM-9602",
+    "member_id": "M-5502",
+    "hospital_id": "H-207",
+    "date_of_service": "2026-09-24",
+    "narrative": "Routine outpatient consultation.",
+    "documents": [
+      "itemised_bill"
+    ],
+    "lines": [
+      {
+        "code": "99213",
+        "amount": 220
+      }
+    ]
+  },
+  {
+    "claim_id": "CLM-9603",
+    "member_id": "M-6118",
+    "hospital_id": "H-207",
+    "date_of_service": "2026-09-25",
+    "narrative": "Outpatient review for persistent knee discomfort.",
+    "documents": [
+      "itemised_bill"
+    ],
+    "lines": [
+      {
+        "code": "99213",
+        "amount": 200
+      }
+    ]
+  },
+  {
+    "claim_id": "CLM-9604",
+    "member_id": "M-6118",
+    "hospital_id": "H-207",
+    "date_of_service": "2026-09-26",
+    "narrative": "Routine outpatient consultation.",
+    "documents": [
+      "itemised_bill"
+    ],
+    "lines": [
+      {
+        "code": "99213",
+        "amount": 190
+      }
+    ]
   }
 ]

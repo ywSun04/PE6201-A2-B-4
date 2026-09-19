@@ -411,5 +411,47 @@
       "approved_total 8200"
     ],
     "note": "Iris boundary case. The service date equals PA-5702 valid_to. POL-6001 continues through 2027-05-31, so only an incorrect strict date_of_service < valid_to check rejects this claim."
+  },
+  {
+    "case_id": "CLM-9601",
+    "expected_decision": "escalate",
+    "trigger": "duplicate_claim",
+    "family": "duplicate_of_decided_claim",
+    "must_record": [
+      "CLM-9591 named as the prior decision",
+      "the facts that matched: member, hospital, date of service, lines",
+      "escalate_to human claims assessor"
+    ],
+    "note": "True duplicate: all four matching facts are identical."
+  },
+  {
+    "case_id": "CLM-9602",
+    "expected_decision": "approve_in_principle",
+    "family": "duplicate_near_miss_member",
+    "must_record": [
+      "approved_total 220",
+      "NOT a duplicate: CLM-9592 has a different member"
+    ],
+    "note": "Matching hospital, date and lines are insufficient when the member differs."
+  },
+  {
+    "case_id": "CLM-9603",
+    "expected_decision": "approve_in_principle",
+    "family": "duplicate_near_miss_hospital",
+    "must_record": [
+      "approved_total 200",
+      "NOT a duplicate: CLM-9593 has a different hospital"
+    ],
+    "note": "Matching member, date and lines are insufficient when the hospital differs."
+  },
+  {
+    "case_id": "CLM-9604",
+    "expected_decision": "approve_in_principle",
+    "family": "duplicate_near_miss_lines",
+    "must_record": [
+      "approved_total 190",
+      "NOT a duplicate: CLM-9594 has a different line amount"
+    ],
+    "note": "The current claim amount is 190 while the historical claim amount is 180."
   }
 ]
