@@ -1,11 +1,11 @@
 {
   "config": "BACKEND=live  LIVE - this costs money  |  PROBLEM=A  |  prompt=v2  |  model=qwen/qwen3.8-flash  |  cap=8 turns  |  autonomy=confirm",
   "summary": {
-    "trials": 63,
-    "passed": 17,
-    "pass_rate": 0.2698412698412698,
-    "median_turns": 2,
-    "cost_usd": 0.12385
+    "trials": 86,
+    "passed": 19,
+    "pass_rate": 0.22093023255813954,
+    "median_turns": 2.0,
+    "cost_usd": 0.153983
   },
   "results": [
     {
@@ -1900,6 +1900,664 @@
         "backend": "live"
       },
       "family": "required_document_absent_with_excluded_line"
+    },
+    {
+      "case_id": "CLM-9101",
+      "trial": 1,
+      "passed": true,
+      "fails": [],
+      "record": {
+        "decision": "approve_in_principle",
+        "reason": "Single line 99213 (Outpatient consultation) is covered under active policy POL-6001: no pre-authorisation required, not excluded, and no required document outstanding. Date of service 2026-09-21 is within policy dates, the $180 is within the remaining annual limit of 15000, hospital H-114 is on panel, and no duplicate exists. The line resolves as covered, so the claim is approved in principle for $180.",
+        "approved_total": 180,
+        "refused_total": 0,
+        "lines_resolved": 1,
+        "dispositions": [
+          {
+            "code": "99213",
+            "amount": 180,
+            "disposition": "covered",
+            "note": "Covered under POL-6001; no preauth required, not excluded, no required document outstanding."
+          }
+        ],
+        "case_id": "CLM-9101",
+        "evidence": [
+          "get_claim",
+          "lookup_policy",
+          "lookup_hospital",
+          "check_duplicate_claim",
+          "check_coverage",
+          "issue_decision_letter"
+        ],
+        "turns": 4,
+        "tokens_in": 15070,
+        "tokens_out": 1454,
+        "cost_usd": 0.002944,
+        "seconds": 24.865,
+        "guardrails_fired": [
+          {
+            "guardrail": "gate_passed",
+            "detail": "issue_decision_letter (autonomy=confirm)"
+          }
+        ],
+        "stopped_by": null,
+        "backend": "live"
+      },
+      "family": "single_line_ordinary_act"
+    },
+    {
+      "case_id": "CLM-9102",
+      "trial": 1,
+      "passed": false,
+      "fails": [
+        "decision 'escalate', expected 'approve_in_principle'"
+      ],
+      "record": {
+        "decision": "escalate",
+        "reason": "tool layer refused - 'POL-2214' is not in policies.json - lookup_policy gives you the id for this member",
+        "case_id": "CLM-9102",
+        "evidence": [
+          "get_claim"
+        ],
+        "turns": 2,
+        "tokens_in": 5210,
+        "tokens_out": 605,
+        "cost_usd": 0.001066,
+        "seconds": 10.33,
+        "guardrails_fired": [],
+        "stopped_by": "unknown_policy_id",
+        "backend": "live"
+      },
+      "family": "two_line_ordinary_act"
+    },
+    {
+      "case_id": "CLM-9103",
+      "trial": 1,
+      "passed": false,
+      "fails": [
+        "decision 'escalate', expected 'approve_in_principle'"
+      ],
+      "record": {
+        "decision": "escalate",
+        "reason": "tool layer refused - 'POL-2214' is not in policies.json - lookup_policy gives you the id for this member",
+        "case_id": "CLM-9103",
+        "evidence": [
+          "get_claim",
+          "lookup_policy",
+          "lookup_hospital"
+        ],
+        "turns": 2,
+        "tokens_in": 5230,
+        "tokens_out": 624,
+        "cost_usd": 0.001078,
+        "seconds": 10.54,
+        "guardrails_fired": [],
+        "stopped_by": "unknown_policy_id",
+        "backend": "live"
+      },
+      "family": "three_lines_valid_preauth"
+    },
+    {
+      "case_id": "CLM-9104",
+      "trial": 1,
+      "passed": false,
+      "fails": [
+        "decision 'escalate', expected 'approve_in_principle'"
+      ],
+      "record": {
+        "decision": "escalate",
+        "reason": "tool layer refused - 'POL-2214' is not in policies.json - lookup_policy gives you the id for this member",
+        "case_id": "CLM-9104",
+        "evidence": [
+          "get_claim",
+          "lookup_policy",
+          "lookup_hospital",
+          "check_duplicate_claim"
+        ],
+        "turns": 2,
+        "tokens_in": 5255,
+        "tokens_out": 690,
+        "cost_usd": 0.001113,
+        "seconds": 11.174,
+        "guardrails_fired": [],
+        "stopped_by": "unknown_policy_id",
+        "backend": "live"
+      },
+      "family": "four_lines_partly_payable"
+    },
+    {
+      "case_id": "CLM-9501",
+      "trial": 1,
+      "passed": false,
+      "fails": [
+        "decision 'escalate', expected 'approve_in_principle'"
+      ],
+      "record": {
+        "decision": "escalate",
+        "reason": "tool layer refused - '' is not in policies.json - lookup_policy gives you the id for this member",
+        "case_id": "CLM-9501",
+        "evidence": [
+          "get_claim",
+          "lookup_policy",
+          "lookup_hospital"
+        ],
+        "turns": 2,
+        "tokens_in": 5229,
+        "tokens_out": 531,
+        "cost_usd": 0.001034,
+        "seconds": 9.11,
+        "guardrails_fired": [],
+        "stopped_by": "unknown_policy_id",
+        "backend": "live"
+      },
+      "family": "annual_limit_exactly_remaining"
+    },
+    {
+      "case_id": "CLM-9502",
+      "trial": 1,
+      "passed": false,
+      "fails": [
+        "trigger 'lines_exceed_remaining_annual_limit', expected 'annual_limit_exceeded'"
+      ],
+      "record": {
+        "decision": "escalate",
+        "reason": "The three lines total $601 (99213 $201 + 80053 $100 + 45378 $300), exceeding the member's remaining annual limit of $600 under policy POL-4102 (annual_limit $6000, used_to_date $5400). The episode is not a duplicate (no prior decision found), the policy is active, and the date of service 2026-10-02 falls within the policy period, so the limit breach is the sole reason the claim cannot be settled.",
+        "trigger": "lines_exceed_remaining_annual_limit",
+        "escalate_to": "Claims Manager",
+        "case_id": "CLM-9502",
+        "evidence": [
+          "get_claim",
+          "lookup_policy",
+          "lookup_hospital",
+          "check_duplicate_claim"
+        ],
+        "turns": 3,
+        "tokens_in": 11880,
+        "tokens_out": 1709,
+        "cost_usd": 0.002585,
+        "seconds": 29.78,
+        "guardrails_fired": [],
+        "stopped_by": null,
+        "backend": "live"
+      },
+      "family": "annual_limit_one_dollar_over"
+    },
+    {
+      "case_id": "CLM-9502",
+      "trial": 2,
+      "passed": false,
+      "fails": [
+        "trigger None, expected 'annual_limit_exceeded'"
+      ],
+      "record": {
+        "decision": "escalate",
+        "reason": "tool layer refused - 'POL-3390' is not in policies.json - lookup_policy gives you the id for this member",
+        "case_id": "CLM-9502",
+        "evidence": [
+          "get_claim",
+          "lookup_policy",
+          "lookup_hospital"
+        ],
+        "turns": 2,
+        "tokens_in": 5229,
+        "tokens_out": 566,
+        "cost_usd": 0.00105,
+        "seconds": 9.997,
+        "guardrails_fired": [],
+        "stopped_by": "unknown_policy_id",
+        "backend": "live"
+      },
+      "family": "annual_limit_one_dollar_over"
+    },
+    {
+      "case_id": "CLM-9502",
+      "trial": 3,
+      "passed": false,
+      "fails": [
+        "trigger None, expected 'annual_limit_exceeded'"
+      ],
+      "record": {
+        "decision": "escalate",
+        "reason": "tool layer refused - '' is not in policies.json - lookup_policy gives you the id for this member",
+        "case_id": "CLM-9502",
+        "evidence": [
+          "get_claim",
+          "lookup_policy",
+          "lookup_hospital"
+        ],
+        "turns": 2,
+        "tokens_in": 5220,
+        "tokens_out": 523,
+        "cost_usd": 0.001029,
+        "seconds": 8.913,
+        "guardrails_fired": [],
+        "stopped_by": "unknown_policy_id",
+        "backend": "live"
+      },
+      "family": "annual_limit_one_dollar_over"
+    },
+    {
+      "case_id": "CLM-9503",
+      "trial": 1,
+      "passed": true,
+      "fails": [],
+      "record": {
+        "decision": "approve_in_principle",
+        "reason": "Line 99213 is covered under POL-4102 with no pre-authorisation required, no exclusion, and no missing document (itemised_bill attached). Policy is active and the date of service 2026-12-31 is within the policy period (end_date inclusive). Hospital H-207 is on panel. No duplicate claim found. The $180 line fits within the remaining annual limit of $600. All lines resolved as covered; approved total $180.",
+        "lines": [
+          {
+            "code": "99213",
+            "amount": 180,
+            "disposition": "covered"
+          }
+        ],
+        "approved_total": 180,
+        "refused_total": 0,
+        "case_id": "CLM-9503",
+        "evidence": [
+          "get_claim",
+          "lookup_policy",
+          "lookup_hospital",
+          "check_duplicate_claim",
+          "check_coverage",
+          "issue_decision_letter"
+        ],
+        "turns": 4,
+        "tokens_in": 15202,
+        "tokens_out": 1373,
+        "cost_usd": 0.002926,
+        "seconds": 24.138,
+        "guardrails_fired": [
+          {
+            "guardrail": "gate_passed",
+            "detail": "issue_decision_letter (autonomy=confirm)"
+          }
+        ],
+        "stopped_by": null,
+        "backend": "live"
+      },
+      "family": "policy_end_date_inclusive"
+    },
+    {
+      "case_id": "CLM-9504",
+      "trial": 1,
+      "passed": false,
+      "fails": [
+        "trigger None, expected 'outside_policy_dates'"
+      ],
+      "record": {
+        "decision": "escalate",
+        "reason": "tool layer refused - 'POL-5001' is not in policies.json - lookup_policy gives you the id for this member",
+        "case_id": "CLM-9504",
+        "evidence": [
+          "get_claim",
+          "lookup_policy",
+          "lookup_hospital"
+        ],
+        "turns": 2,
+        "tokens_in": 5191,
+        "tokens_out": 534,
+        "cost_usd": 0.00103,
+        "seconds": 10.391,
+        "guardrails_fired": [],
+        "stopped_by": "unknown_policy_id",
+        "backend": "live"
+      },
+      "family": "policy_day_after_end_date"
+    },
+    {
+      "case_id": "CLM-9504",
+      "trial": 2,
+      "passed": false,
+      "fails": [
+        "trigger None, expected 'outside_policy_dates'"
+      ],
+      "record": {
+        "decision": "escalate",
+        "reason": "tool layer refused - 'POL-7781' is not in policies.json - lookup_policy gives you the id for this member",
+        "case_id": "CLM-9504",
+        "evidence": [
+          "get_claim",
+          "lookup_policy"
+        ],
+        "turns": 2,
+        "tokens_in": 5195,
+        "tokens_out": 644,
+        "cost_usd": 0.001082,
+        "seconds": 9.798,
+        "guardrails_fired": [],
+        "stopped_by": "unknown_policy_id",
+        "backend": "live"
+      },
+      "family": "policy_day_after_end_date"
+    },
+    {
+      "case_id": "CLM-9504",
+      "trial": 3,
+      "passed": false,
+      "fails": [
+        "trigger 'date_outside_policy_period', expected 'outside_policy_dates'"
+      ],
+      "record": {
+        "decision": "escalate",
+        "trigger": "date_outside_policy_period",
+        "reason": "Date of service 2027-01-01 falls outside policy POL-4102's period (2026-01-01 to 2026-12-31), even though status is 'active'. Member narrative confirms the consultation occurred after policy expiry. Escalated to claims review; hospital Mount Elizabeth East (H-207) is on panel and no duplicate claim was found.",
+        "approved_total": 0,
+        "refused_total": 0,
+        "lines_resolved": 0,
+        "case_id": "CLM-9504",
+        "evidence": [
+          "get_claim",
+          "lookup_policy",
+          "lookup_hospital",
+          "check_duplicate_claim"
+        ],
+        "turns": 2,
+        "tokens_in": 8337,
+        "tokens_out": 1093,
+        "cost_usd": 0.001764,
+        "seconds": 18.953,
+        "guardrails_fired": [],
+        "stopped_by": null,
+        "backend": "live"
+      },
+      "family": "policy_day_after_end_date"
+    },
+    {
+      "case_id": "CLM-9505",
+      "trial": 1,
+      "passed": false,
+      "fails": [
+        "decision 'escalate', expected 'approve_in_principle'"
+      ],
+      "record": {
+        "decision": "escalate",
+        "reason": "tool layer refused - 'POL-2026-889' is not in policies.json - lookup_policy gives you the id for this member",
+        "case_id": "CLM-9505",
+        "evidence": [
+          "get_claim",
+          "lookup_policy",
+          "lookup_hospital"
+        ],
+        "turns": 2,
+        "tokens_in": 5201,
+        "tokens_out": 638,
+        "cost_usd": 0.00108,
+        "seconds": 9.32,
+        "guardrails_fired": [],
+        "stopped_by": "unknown_policy_id",
+        "backend": "live"
+      },
+      "family": "preauth_start_date_inclusive"
+    },
+    {
+      "case_id": "CLM-9506",
+      "trial": 1,
+      "passed": false,
+      "fails": [
+        "decision 'escalate', expected 'request_document'"
+      ],
+      "record": {
+        "decision": "escalate",
+        "reason": "tool layer refused - 'POL-5502' is not in policies.json - lookup_policy gives you the id for this member",
+        "case_id": "CLM-9506",
+        "evidence": [
+          "get_claim",
+          "lookup_policy"
+        ],
+        "turns": 2,
+        "tokens_in": 5204,
+        "tokens_out": 530,
+        "cost_usd": 0.00103,
+        "seconds": 9.563,
+        "guardrails_fired": [],
+        "stopped_by": "unknown_policy_id",
+        "backend": "live"
+      },
+      "family": "preauth_day_before_valid_from"
+    },
+    {
+      "case_id": "CLM-9506",
+      "trial": 2,
+      "passed": false,
+      "fails": [
+        "decision 'escalate', expected 'request_document'"
+      ],
+      "record": {
+        "decision": "escalate",
+        "reason": "tool layer refused - 'POL-5502' is not in policies.json - lookup_policy gives you the id for this member",
+        "case_id": "CLM-9506",
+        "evidence": [
+          "get_claim",
+          "lookup_policy",
+          "lookup_hospital"
+        ],
+        "turns": 2,
+        "tokens_in": 5197,
+        "tokens_out": 394,
+        "cost_usd": 0.000965,
+        "seconds": 7.989,
+        "guardrails_fired": [],
+        "stopped_by": "unknown_policy_id",
+        "backend": "live"
+      },
+      "family": "preauth_day_before_valid_from"
+    },
+    {
+      "case_id": "CLM-9506",
+      "trial": 3,
+      "passed": false,
+      "fails": [
+        "decision 'escalate', expected 'request_document'"
+      ],
+      "record": {
+        "decision": "escalate",
+        "reason": "tool layer refused - 'POL-5502' is not in policies.json - lookup_policy gives you the id for this member",
+        "case_id": "CLM-9506",
+        "evidence": [
+          "get_claim",
+          "lookup_policy"
+        ],
+        "turns": 2,
+        "tokens_in": 5186,
+        "tokens_out": 460,
+        "cost_usd": 0.000994,
+        "seconds": 9.039,
+        "guardrails_fired": [],
+        "stopped_by": "unknown_policy_id",
+        "backend": "live"
+      },
+      "family": "preauth_day_before_valid_from"
+    },
+    {
+      "case_id": "CLM-9507",
+      "trial": 1,
+      "passed": false,
+      "fails": [
+        "decision 'escalate', expected 'approve_in_principle'"
+      ],
+      "record": {
+        "decision": "escalate",
+        "reason": "tool layer refused - 'POL-5502' is not in policies.json - lookup_policy gives you the id for this member",
+        "case_id": "CLM-9507",
+        "evidence": [
+          "get_claim",
+          "lookup_policy",
+          "lookup_hospital"
+        ],
+        "turns": 2,
+        "tokens_in": 5189,
+        "tokens_out": 462,
+        "cost_usd": 0.000995,
+        "seconds": 8.977,
+        "guardrails_fired": [],
+        "stopped_by": "unknown_policy_id",
+        "backend": "live"
+      },
+      "family": "preauth_end_date_inclusive"
+    },
+    {
+      "case_id": "CLM-9601",
+      "trial": 1,
+      "passed": false,
+      "fails": [
+        "trigger None, expected 'duplicate_claim'"
+      ],
+      "record": {
+        "decision": "escalate",
+        "reason": "tool layer refused - 'POL-PLACEHOLDER' is not in policies.json - lookup_policy gives you the id for this member",
+        "case_id": "CLM-9601",
+        "evidence": [
+          "get_claim",
+          "lookup_policy",
+          "lookup_hospital"
+        ],
+        "turns": 2,
+        "tokens_in": 5216,
+        "tokens_out": 581,
+        "cost_usd": 0.001055,
+        "seconds": 11.124,
+        "guardrails_fired": [],
+        "stopped_by": "unknown_policy_id",
+        "backend": "live"
+      },
+      "family": "duplicate_of_decided_claim"
+    },
+    {
+      "case_id": "CLM-9601",
+      "trial": 2,
+      "passed": false,
+      "fails": [
+        "trigger None, expected 'duplicate_claim'"
+      ],
+      "record": {
+        "decision": "escalate",
+        "reason": "tool layer refused - 'P-PLACEHOLDER' is not in policies.json - lookup_policy gives you the id for this member",
+        "case_id": "CLM-9601",
+        "evidence": [
+          "get_claim",
+          "lookup_policy",
+          "lookup_hospital"
+        ],
+        "turns": 2,
+        "tokens_in": 5209,
+        "tokens_out": 610,
+        "cost_usd": 0.001068,
+        "seconds": 9.852,
+        "guardrails_fired": [],
+        "stopped_by": "unknown_policy_id",
+        "backend": "live"
+      },
+      "family": "duplicate_of_decided_claim"
+    },
+    {
+      "case_id": "CLM-9601",
+      "trial": 3,
+      "passed": false,
+      "fails": [
+        "trigger None, expected 'duplicate_claim'"
+      ],
+      "record": {
+        "decision": "escalate",
+        "reason": "tool layer refused - 'POL-PLACEHOLDER' is not in policies.json - lookup_policy gives you the id for this member",
+        "case_id": "CLM-9601",
+        "evidence": [
+          "get_claim",
+          "lookup_policy",
+          "lookup_hospital"
+        ],
+        "turns": 2,
+        "tokens_in": 5210,
+        "tokens_out": 770,
+        "cost_usd": 0.001143,
+        "seconds": 11.941,
+        "guardrails_fired": [],
+        "stopped_by": "unknown_policy_id",
+        "backend": "live"
+      },
+      "family": "duplicate_of_decided_claim"
+    },
+    {
+      "case_id": "CLM-9602",
+      "trial": 1,
+      "passed": false,
+      "fails": [
+        "decision 'escalate', expected 'approve_in_principle'"
+      ],
+      "record": {
+        "decision": "escalate",
+        "reason": "tool layer refused - 'POL-5502' is not in policies.json - lookup_policy gives you the id for this member",
+        "case_id": "CLM-9602",
+        "evidence": [
+          "get_claim",
+          "check_duplicate_claim",
+          "lookup_policy",
+          "lookup_hospital"
+        ],
+        "turns": 2,
+        "tokens_in": 5188,
+        "tokens_out": 608,
+        "cost_usd": 0.001064,
+        "seconds": 10.445,
+        "guardrails_fired": [],
+        "stopped_by": "unknown_policy_id",
+        "backend": "live"
+      },
+      "family": "duplicate_near_miss_member"
+    },
+    {
+      "case_id": "CLM-9603",
+      "trial": 1,
+      "passed": false,
+      "fails": [
+        "decision 'escalate', expected 'approve_in_principle'"
+      ],
+      "record": {
+        "decision": "escalate",
+        "reason": "tool layer refused - 'POL-6118' is not in policies.json - lookup_policy gives you the id for this member",
+        "case_id": "CLM-9603",
+        "evidence": [
+          "get_claim",
+          "lookup_policy",
+          "lookup_hospital"
+        ],
+        "turns": 2,
+        "tokens_in": 5191,
+        "tokens_out": 474,
+        "cost_usd": 0.001001,
+        "seconds": 9.992,
+        "guardrails_fired": [],
+        "stopped_by": "unknown_policy_id",
+        "backend": "live"
+      },
+      "family": "duplicate_near_miss_hospital"
+    },
+    {
+      "case_id": "CLM-9604",
+      "trial": 1,
+      "passed": false,
+      "fails": [
+        "decision 'escalate', expected 'approve_in_principle'"
+      ],
+      "record": {
+        "decision": "escalate",
+        "reason": "tool layer refused - 'POL-6118' is not in policies.json - lookup_policy gives you the id for this member",
+        "case_id": "CLM-9604",
+        "evidence": [
+          "get_claim",
+          "lookup_policy",
+          "lookup_hospital"
+        ],
+        "turns": 2,
+        "tokens_in": 5186,
+        "tokens_out": 551,
+        "cost_usd": 0.001037,
+        "seconds": 10.711,
+        "guardrails_fired": [],
+        "stopped_by": "unknown_policy_id",
+        "backend": "live"
+      },
+      "family": "duplicate_near_miss_lines"
     }
   ],
   "judgement_queue": [
@@ -2190,6 +2848,187 @@
         "31255 refused under EX-14 cosmetic dermatology",
         "that the refusal is recorded even though the claim is an ask",
         "the document named and the line it belongs to (45378)"
+      ],
+      "verdict": null,
+      "graded_by": null
+    },
+    {
+      "case_id": "CLM-9101",
+      "decision": "approve_in_principle",
+      "reason": "Single line 99213 (Outpatient consultation) is covered under active policy POL-6001: no pre-authorisation required, not excluded, and no required document outstanding. Date of service 2026-09-21 is within policy dates, the $180 is within the remaining annual limit of 15000, hospital H-114 is on panel, and no duplicate exists. The line resolves as covered, so the claim is approved in principle for $180.",
+      "must_record": [
+        "line 99213 covered",
+        "approved_total 180",
+        "H-114 is a panel hospital"
+      ],
+      "verdict": null,
+      "graded_by": null
+    },
+    {
+      "case_id": "CLM-9102",
+      "decision": "escalate",
+      "reason": "tool layer refused - 'POL-2214' is not in policies.json - lookup_policy gives you the id for this member",
+      "must_record": [
+        "line 47120 covered for 1400",
+        "line 80053 covered for 120",
+        "approved_total 1520"
+      ],
+      "verdict": null,
+      "graded_by": null
+    },
+    {
+      "case_id": "CLM-9103",
+      "decision": "escalate",
+      "reason": "tool layer refused - 'POL-2214' is not in policies.json - lookup_policy gives you the id for this member",
+      "must_record": [
+        "a disposition for all 3 lines",
+        "PA-5521 cited for line 62480",
+        "PA-5521 valid on 2026-09-24",
+        "approved_total 2300"
+      ],
+      "verdict": null,
+      "graded_by": null
+    },
+    {
+      "case_id": "CLM-9104",
+      "decision": "escalate",
+      "reason": "tool layer refused - 'POL-2214' is not in policies.json - lookup_policy gives you the id for this member",
+      "must_record": [
+        "a disposition for all 4 lines",
+        "PA-5521 valid on 2026-09-25 for line 62480",
+        "31255 refused under EX-14 cosmetic dermatology",
+        "approved_total 2200",
+        "refused_total 250",
+        "H-330 recorded as non-panel"
+      ],
+      "verdict": null,
+      "graded_by": null
+    },
+    {
+      "case_id": "CLM-9501",
+      "decision": "escalate",
+      "reason": "tool layer refused - '' is not in policies.json - lookup_policy gives you the id for this member",
+      "must_record": [
+        "claim total 600",
+        "600 remaining on POL-4102 (6000 - 5400)",
+        "that equality with the remaining amount is payable"
+      ],
+      "verdict": null,
+      "graded_by": null
+    },
+    {
+      "case_id": "CLM-9502",
+      "decision": "escalate",
+      "reason": "The three lines total $601 (99213 $201 + 80053 $100 + 45378 $300), exceeding the member's remaining annual limit of $600 under policy POL-4102 (annual_limit $6000, used_to_date $5400). The episode is not a duplicate (no prior decision found), the policy is active, and the date of service 2026-10-02 falls within the policy period, so the limit breach is the sole reason the claim cannot be settled.",
+      "must_record": [
+        "claim total 601 (201 + 100 + 300)",
+        "600 remaining on POL-4102 (6000 - 5400)",
+        "that every individual line is below 600 and only the sum exceeds it"
+      ],
+      "verdict": null,
+      "graded_by": null
+    },
+    {
+      "case_id": "CLM-9503",
+      "decision": "approve_in_principle",
+      "reason": "Line 99213 is covered under POL-4102 with no pre-authorisation required, no exclusion, and no missing document (itemised_bill attached). Policy is active and the date of service 2026-12-31 is within the policy period (end_date inclusive). Hospital H-207 is on panel. No duplicate claim found. The $180 line fits within the remaining annual limit of $600. All lines resolved as covered; approved total $180.",
+      "must_record": [
+        "date of service 2026-12-31",
+        "POL-4102 runs through 2026-12-31 inclusively",
+        "approved_total 180"
+      ],
+      "verdict": null,
+      "graded_by": null
+    },
+    {
+      "case_id": "CLM-9504",
+      "decision": "escalate",
+      "reason": "tool layer refused - 'POL-5001' is not in policies.json - lookup_policy gives you the id for this member",
+      "must_record": [
+        "date of service 2027-01-01",
+        "POL-4102 ends 2026-12-31",
+        "that status remains active but date coverage has ended"
+      ],
+      "verdict": null,
+      "graded_by": null
+    },
+    {
+      "case_id": "CLM-9505",
+      "decision": "escalate",
+      "reason": "tool layer refused - 'POL-2026-889' is not in policies.json - lookup_policy gives you the id for this member",
+      "must_record": [
+        "PA-5702 cited for line 27447",
+        "validity begins 2026-07-01 and includes the date of service",
+        "approved_total 8200"
+      ],
+      "verdict": null,
+      "graded_by": null
+    },
+    {
+      "case_id": "CLM-9506",
+      "decision": "escalate",
+      "reason": "tool layer refused - 'POL-5502' is not in policies.json - lookup_policy gives you the id for this member",
+      "must_record": [
+        "the missing pre-authorisation named for line 27447",
+        "the date it must be valid on (2026-06-30)",
+        "that the attached discharge summary does not replace pre-authorisation"
+      ],
+      "verdict": null,
+      "graded_by": null
+    },
+    {
+      "case_id": "CLM-9507",
+      "decision": "escalate",
+      "reason": "tool layer refused - 'POL-5502' is not in policies.json - lookup_policy gives you the id for this member",
+      "must_record": [
+        "PA-5702 cited for line 27447",
+        "validity runs through 2026-12-31 inclusively",
+        "approved_total 8200"
+      ],
+      "verdict": null,
+      "graded_by": null
+    },
+    {
+      "case_id": "CLM-9601",
+      "decision": "escalate",
+      "reason": "tool layer refused - 'POL-PLACEHOLDER' is not in policies.json - lookup_policy gives you the id for this member",
+      "must_record": [
+        "CLM-9591 named as the prior decision",
+        "the facts that matched: member, hospital, date of service, lines",
+        "escalate_to human claims assessor"
+      ],
+      "verdict": null,
+      "graded_by": null
+    },
+    {
+      "case_id": "CLM-9602",
+      "decision": "escalate",
+      "reason": "tool layer refused - 'POL-5502' is not in policies.json - lookup_policy gives you the id for this member",
+      "must_record": [
+        "approved_total 220",
+        "NOT a duplicate: CLM-9592 has a different member"
+      ],
+      "verdict": null,
+      "graded_by": null
+    },
+    {
+      "case_id": "CLM-9603",
+      "decision": "escalate",
+      "reason": "tool layer refused - 'POL-6118' is not in policies.json - lookup_policy gives you the id for this member",
+      "must_record": [
+        "approved_total 200",
+        "NOT a duplicate: CLM-9593 has a different hospital"
+      ],
+      "verdict": null,
+      "graded_by": null
+    },
+    {
+      "case_id": "CLM-9604",
+      "decision": "escalate",
+      "reason": "tool layer refused - 'POL-6118' is not in policies.json - lookup_policy gives you the id for this member",
+      "must_record": [
+        "approved_total 190",
+        "NOT a duplicate: CLM-9594 has a different line amount"
       ],
       "verdict": null,
       "graded_by": null

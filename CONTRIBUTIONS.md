@@ -48,17 +48,19 @@ backend. Three lines, merged by Harry after he re-ran the reproduction.
 
 **4 ASK cases** (CLM-9401–9404) plus scripts for CLM-8901.
 
-**Live battery (D5(b), this member's model).** `qwen/qwen3.8-flash`, v2, 25 cases,
-63 trials: **17 of 63 code-check pass (27%)**, US$0.124. Decision agreed on 47 of
-63 (75%) — most code-check fails are trigger-string mismatches. ASK family 7 of
-12. Results: `docs/evidence/live_results.json`. v1 arm not yet run.
+**Live battery (D5(b), this member's model).** `qwen/qwen3.8-flash`, v2, frozen
+40-case set, 86 trials: **19 of 86 code-check pass (22%)**, US$0.154. The first
+25 cases / 63 trials were kept; only the later 15 cases (CLM-9101–9104,
+9501–9507, 9601–9604) were backfilled. Failures were kept; no cherry-pick.
+Results: `docs/evidence/live_results.json`. v1 is Liu's matched gpt-4o-mini arm,
+not this model.
 
 **Report:** drafted section 2 (`docs/report_section2.md`); D2(c) slot left for
 the loop owner.
 
 **Commits** (`git log --author=ywSun04`): `ea5a1d5`, `80c3213`, `7ac6b19`,
 `0ee20b1`, `74fa077`, `4ec8659`, `137ffa3`, `4154e8b`, `45ed266`, `8c498ec`,
-`7249421`, `c742146`, `36dcf98`, plus PR #3.
+`7249421`, `c742146`, `36dcf98`, plus PR #3 and the 40-case live backfill.
 
 ## 2 — Chan Hio Weng (Harry) — D3, D7
 
