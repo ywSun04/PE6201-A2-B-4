@@ -1,7 +1,7 @@
 # Report · Section 6 · Cost to serve
 
 **Owner:** Liu Zeyuan  
-**Evidence:** `docs/evidence/live_results_liu_v1.json` and PR #6,
+**Evidence:** `docs/evidence/live_results_liu_v1.json` and merged PR #6,
 `Preethi_gpt-4o-mini_v2_40cases_combined_results.json`.
 
 ---
@@ -34,7 +34,7 @@ buys materially better task performance rather than fewer turns.
 | Model cost per trial | US$0.000757 | US$0.001428 |
 | Model cost per code-check pass | US$0.003829 | US$0.003962 |
 | Same-mix cost per 1,000 trials | US$0.757 | US$1.428 |
-| Human judgement reasons passed | 1 / 40 | Pending in PR #6 |
+| Human judgement reasons passed | 1 / 40 | Pending (40 / 40 ungraded) |
 
 For sensitivity, let **H** be the human cost of reviewing one failed automated trial. With
 failure rate as the provisional review proxy, expected cost per trial is
@@ -45,9 +45,10 @@ lower total-cost design despite its larger prompt.
 
 Liu Zeyuan manually reviewed all 40 v1 judgement items: only 1 reason contained every
 required evidential detail, while 39 omitted at least one required fact. The matched v2
-judgement queue in PR #6 is still pending. The break-even calculation therefore uses the
-automated code check as a provisional review proxy; the final report should recompute the
-human-cost term once the v2 reasons have also been adjudicated.
+results are now merged, but all 40 entries in their judgement queue remain ungraded. The
+break-even calculation therefore uses the automated code check as a provisional review
+proxy; the final report should recompute the human-cost term once the v2 reasons have also
+been adjudicated.
 
 ---
 
