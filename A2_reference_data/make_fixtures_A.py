@@ -559,7 +559,7 @@ EXTRA_CLAIMS = [               # {"claim_id", "member_id", "hospital_id",
      "lines": [{"code": "47120", "amount": 1200},
                {"code": "62480", "amount": 900},
                {"code": "80053", "amount": 100},
-               {"code": "31255", "amount": 250}]},,
+               {"code": "31255", "amount": 250}]},
 
     # ---- Member 4 · boundary data ---------------------------------------
     # These four cases pair the two inclusive boundaries in the policy rule:
