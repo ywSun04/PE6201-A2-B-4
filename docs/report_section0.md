@@ -1,6 +1,6 @@
 # Report · Section 0 · Why an agent?
 
-**Owner:** Liu Zeyuan  
+**Owner:** Liu Zeyuan
 **Draft budget:** about 210 words. This section does not depend on the live-battery results.
 
 ---

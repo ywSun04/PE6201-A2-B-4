@@ -1,6 +1,6 @@
 # Report · Section 6 · Cost to serve
 
-**Owner:** Liu Zeyuan  
+**Owner:** Liu Zeyuan
 **Evidence:** `docs/evidence/live_results_liu_v1.json` and merged PR #6,
 `Preethi_gpt-4o-mini_v2_40cases_combined_results.json`.
 
