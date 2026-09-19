@@ -331,5 +331,52 @@
       "H-330 recorded as non-panel"
     ],
     "note": "Four lines: three payable, one excluded. Valid pre-authorisation and non-panel hospital must be recorded."
+  },
+  {
+    "case_id": "CLM-9201",
+    "expected_decision": "approve_in_principle",
+    "family": "annual_limit_exactly_remaining",
+    "must_record": [
+      "claim total 600",
+      "600 remaining on POL-4102 (6000 - 5400)",
+      "that equality with the remaining amount is payable"
+    ],
+    "note": "Member 4 boundary case. All three lines are covered, the itemised bill for 45378 is attached, and the claim equals (rather than exceeds) the remaining annual limit. A check using total >= remaining wrongly escalates."
+  },
+  {
+    "case_id": "CLM-9202",
+    "expected_decision": "escalate",
+    "trigger": "annual_limit_exceeded",
+    "family": "annual_limit_one_dollar_over",
+    "must_record": [
+      "claim total 601 (201 + 100 + 300)",
+      "600 remaining on POL-4102 (6000 - 5400)",
+      "that every individual line is below 600 and only the sum exceeds it"
+    ],
+    "note": "Member 4 boundary case. The immediate counterpart to CLM-9201: one dollar over the same remaining amount. It rejects a per-line limit check and a comparison against the annual limit instead of the remainder."
+  },
+  {
+    "case_id": "CLM-9203",
+    "expected_decision": "approve_in_principle",
+    "family": "policy_end_date_inclusive",
+    "must_record": [
+      "date of service 2026-12-31",
+      "POL-4102 runs through 2026-12-31 inclusively",
+      "approved_total 180"
+    ],
+    "note": "Member 4 boundary case. The service date equals the policy end_date, so it is covered. A strict date_of_service < end_date check wrongly escalates."
+  },
+  {
+    "case_id": "CLM-9204",
+    "expected_decision": "escalate",
+    "trigger": "outside_policy_dates",
+    "family": "policy_day_after_end_date",
+    "must_record": [
+      "date of service 2027-01-01",
+      "POL-4102 ends 2026-12-31",
+      "that status remains active but date coverage has ended"
+    ],
+    "note": "Member 4 boundary case. The immediate counterpart to CLM-9203. Policy status alone is insufficient: the date is one day after end_date and must escalate."
   }
+
 ]
