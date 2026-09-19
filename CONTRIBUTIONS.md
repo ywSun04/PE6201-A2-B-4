@@ -55,8 +55,8 @@ backend. Three lines, merged by Harry after he re-ran the reproduction.
 Results: `docs/evidence/live_results.json`. v1 is Liu's matched gpt-4o-mini arm,
 not this model.
 
-**Report:** drafted section 2 (`docs/report_section2.md`); D2(c) slot left for
-the loop owner.
+**Report:** drafted section 2 (`docs/report_section2.md`); D2(c) filled by
+Preethi. Matched pass-rate row is Liu v1 17/86 vs Preethi v2 31/86.
 
 **Commits** (`git log --author=ywSun04`): `ea5a1d5`, `80c3213`, `7ac6b19`,
 `0ee20b1`, `74fa077`, `4ec8659`, `137ffa3`, `4154e8b`, `45ed266`, `8c498ec`,
