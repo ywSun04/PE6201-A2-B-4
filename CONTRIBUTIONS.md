@@ -161,6 +161,19 @@ access. Ordinary cases run once and negative cases three times: **86 of 86 code 
 (100%)**, median 2 turns, maximum 4, and no step-cap stops. The integrity checker passes before
 the replay, and the result is reproducible from a clean clone.
 
+**D5(b) live battery.** Ran `anthropic/claude-haiku-4.5` through OpenRouter with the shared
+v2 prompt on the frozen 40-case / 86-trial set. The automated headline is **0 of 86** with a
+median of 1 turn and US$0.655554 total cost (475,264 input and 36,058 output tokens). This is
+not evidence that Claude made 86 wrong adjudications: every response became the harness's
+`model did not return parseable JSON` fallback immediately after `get_claim`, so no trial reached
+an actual decision. The raw result is retained without a prompt, parser, or data change:
+`docs/evidence/live_results_iris_claude_v2.json`. See `docs/report_section3.md` for the
+cross-model interpretation.
+
+**Artefacts:** `docs/evidence/run_live_battery_iris_claude_v2.py`,
+`docs/evidence/live_results_iris_claude_v2.json`, and the recorded current Haiku price in
+`A2_scaffold/config.py`.
+
 **Commits** (`git log --author=waterrrr0924`): `e80979e`, `9ff7153`, `edd26c3`, `2f3587f`,
 `49643f6`, plus the scripted-replay update for CLM-9501–CLM-9507.
 
