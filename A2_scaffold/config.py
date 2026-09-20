@@ -68,6 +68,10 @@ ARMED_IN_MEMORY = False
 # ─────────────────────────────────────────────────────────────────────
 MAX_TURNS = 8                 # step cap
 MAX_TOKENS_PER_RUN = 60000    # budget ceiling
+# Per-run ceiling. US$0.010 is above the highest legitimate scripted
+# Problem A path (US$0.003960 at its deterministic estimate) while
+# still stopping a runaway live transcript before another tool action.
+MAX_COST_USD = 0.010
 AUTONOMY = "confirm"          # "suggest" | "confirm" | "act"
 #   suggest  - the agent proposes; a human does everything
 #   confirm  - the agent does everything EXCEPT the irreversible step,

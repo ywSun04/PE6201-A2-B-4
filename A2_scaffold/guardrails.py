@@ -26,10 +26,10 @@ WHY 5-7 NEED NO CHANGE TO agent.py
     (already being built for de-duplication), and 7 re-derives the answer
     itself from tools.py rather than trusting anything the agent claims.
     Guard 5 is the one exception: a live US$ ceiling needs a per-turn
-    running cost, which agent.py does not compute today. Its check_cost()
-    is written and tested standalone below; wiring it into the loop is a
-    one-line addition proposed to Preethi (owner of agent.py), not made
-    here without her review.
+    running cost. `agent.py` now computes that estimate after each model
+    response and calls check_cost() before the next tool action. The hook
+    was added during final assembly after the frozen live experiment, so it
+    protects the submitted code without revising those reported results.
 ====================================================================
 """
 
@@ -97,9 +97,8 @@ class Guardrails:
     # ---- 5 · budget ceiling, US$ -------------------------------------
     def check_cost(self, cost_usd):
         """Same shape as check_budget, priced in dollars rather than
-        tokens. Not yet called from agent.py's loop (see module docstring)
-        - tested standalone against a value that would come from a running
-        cost total, once the loop computes one per turn."""
+        tokens. `agent.py` passes the running estimate after each model
+        response, before it accepts another tool action."""
         if self.max_cost_usd is not None and cost_usd > self.max_cost_usd:
             self._fire("cost_ceiling", "US$%.5f" % cost_usd)
             raise GuardrailStop("cost_ceiling",

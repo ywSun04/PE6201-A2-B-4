@@ -10,10 +10,10 @@ see #2 for the shape.
 
 | # | Name | GitHub | Strand(s) owned | Summary |
 |---|---|---|---|---|
-| 1 | Sun Yawen | ywSun04 | D2(a), D2(b) — tool design, descriptors, v1/v2 rewrite | see below |
+| 1 | Sun Yawen | ywSun04 | D2(a), D2(b) — tool design, descriptors, v1/v2 rewrite; later v2 tool/prompt and loop-safety edits | see below |
 | 2 | Chan Hio Weng (Harry) | harry00001177 | D3, D7 — guardrails and two reproduced failures | see below |
-| 3 | Liu Zeyuan | Lizzy-808 | D0, D6, D5(b) v1 — cost model, v1 battery, report/video | see below |
-| 4 | Mohanarangan Preethi | preethi1522 | D1, D2(c) — agent loop, tool implementation, parallel calls | *fill in* |
+| 3 | Liu Zeyuan | Lizzy-808 | D0, D6, D5(b) v1 — cost model, v1 battery, report/video; final D1/D2(c) integration | see below |
+| 4 | Mohanarangan Preethi | preethi1522 | D2(c), D5(b) — four fixtures, V2 battery and base parallel-calls prose | see below |
 | 5 | Zhang Yizhuo (Iris) | waterrrr0924 | D4, D5(a) — evaluation harness, scripted run | see below |
 | 6 | Kou Huilin | khl789 | D4 (data), D5(b) — fixtures, answer key, Mistral live battery | see below |
 ## 1 — Sun Yawen — D2(a), D2(b)
@@ -55,8 +55,13 @@ backend. Three lines, merged by Harry after he re-ran the reproduction.
 Results: `docs/evidence/live_results.json`. v1 is Liu's matched gpt-4o-mini arm,
 not this model.
 
-**Report:** drafted section 2 (`docs/report_section2.md`); D2(c) filled by
-Preethi. Matched pass-rate row is Liu v1 17/86 vs Preethi v2 31/86.
+**Report:** drafted section 2 (`docs/report_section2.md`); Preethi supplied the D2(c)
+base analysis and Liu added the final measured control. Matched pass-rate row is Liu v1
+17/86 vs Preethi v2 31/86.
+
+**Shared implementation boundary.** The repository history attributes the later v2
+tool/prompt and agent-loop safety edits to Sun. The original scaffold is Liu's; no
+core loop or tool implementation is attributed here to Preethi.
 
 **Commits** (`git log --author=ywSun04`): `ea5a1d5`, `80c3213`, `7ac6b19`,
 `0ee20b1`, `74fa077`, `4ec8659`, `137ffa3`, `4154e8b`, `45ed266`, `8c498ec`,
@@ -76,7 +81,8 @@ were mine, argued through and verified by re-running the code before each one la
 four: an evidence check that re-derives the payable total from `tools.py` before
 `issue_decision_letter` fires (catches record tampering and skipped checks, not just
 wording), an already-decided check, and a US$ cost ceiling (logic verified standalone;
-wiring a live per-turn call is Preethi's, in `agent.py`, on her review). All three hook
+Liu wired the per-turn call in `agent.py` during final assembly, after the frozen live
+runs). All three hook
 into the existing `gate()` call — no change to `agent.py` was needed for two of the three.
 
 **D3(b) checklist (`guardrail_checklist.md`).** 12 cases designed and run on the scripted
@@ -189,4 +195,47 @@ cross-model interpretation.
 
 **D6 — Cost to serve.** Drafted `docs/report_section6.md` using the matched V1 and V2 results. The comparison covers model cost, tokens, turns, automated pass rate, human review, and a provisional break-even analysis.
 
+**Final integration on 20 September.** Completed Preethi's ungraded V2 judgement queue
+(0/40 reasons met every pre-written requirement), added reproducible D2(c)
+grouped-versus-sequential evidence, and wired the existing US-dollar ceiling into the
+agent loop. The D2(c) control keeps the same 218 calls across all 40 scripted Problem A
+cases: grouped execution takes 116 turns versus 218 sequentially, with all 40 code checks
+passing in both arms. These additions are mine, not Preethi's; the guardrail design remains
+Harry's and the underlying tool/prompt changes remain Sun's.
+
 **Pull request:** PR #8.
+
+## 4 — Mohanarangan Preethi — D2(c), D5(b)
+
+**AI tools used:** Preethi did not provide a separate AI-tool declaration before final
+assembly. ChatGPT/Codex was used by Liu Zeyuan to verify this summary against the merged
+files and Git history and to complete the final integration evidence. This assistance and
+the authorship boundary are stated here explicitly.
+
+**Evaluation cases.** Added four ordinary ACT cases, CLM-9101–CLM-9104, and regenerated
+the matching Problem A fixtures and expected outcomes. The cases were included in the
+frozen 40-case evaluation set.
+
+**Live battery (D5(b)).** Ran `openai/gpt-4o-mini` with the shared v2 prompt on the frozen
+40-case set: 86 trials, **31 of 86 automated code-check passes (36.0%)**, median 3 turns,
+743,853 input tokens, 18,759 output tokens and US$0.122829 model cost. The saved file is
+`Preethi_gpt-4o-mini_v2_40cases_combined_results.json`. At final assembly, Liu Zeyuan
+reviewed its 40 recorded reasons against the pre-written `must_record` requirements with
+ChatGPT/Codex assistance. All 40 omitted at least one required item, so the strict human
+reasoning result is **0 of 40**; the raw model outputs and automated scores were not changed.
+
+**D2(c).** Added the parallel tool-calling analysis using Problem A case CLM-8842. The
+final text explains which calls are independent, why pre-authorisation must follow
+coverage, and how eight calls can be organised into four model turns without changing the
+decision evidence. Liu Zeyuan added the final 40-case grouped-versus-sequential measurement
+and its evidence script on 20 September.
+
+**D1 final assembly note.** No Preethi-authored change to `A2_scaffold/agent.py`,
+`A2_scaffold/tools.py` or `A2_scaffold/prompt.py` appears in the repository history.
+The core scaffold lines are Liu Zeyuan's; Sun Yawen authored the later v2 tool/prompt and
+agent-loop safety changes. Because Preethi was unavailable at final assembly, Liu added
+the per-turn dollar-guard integration. This records the submitted implementation without
+attributing Liu's or Sun's code to Preethi.
+
+**Commits** (`git log --author=preethi1522`): `3ab5fdd`, `b4e2761`, `6e15ce7`,
+`a794a60`, `5f08c5a`.

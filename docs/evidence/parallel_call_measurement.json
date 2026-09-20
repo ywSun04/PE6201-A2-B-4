@@ -1,0 +1,350 @@
+{
+  "method": "Offline scripted control. Grouped schedules are the committed Problem A scripts; sequential schedules split only independent calls into one call per turn. Token values are scripted transcript estimates, not live vendor measurements.",
+  "case_ids": [
+    "CLM-8842",
+    "CLM-8850",
+    "CLM-8861",
+    "CLM-8874",
+    "CLM-8888",
+    "CLM-8894",
+    "CLM-8901",
+    "CLM-8910",
+    "CLM-8917",
+    "CLM-8925",
+    "CLM-8933",
+    "CLM-8941",
+    "CLM-8952",
+    "CLM-8960",
+    "CLM-8971",
+    "CLM-9301",
+    "CLM-9302",
+    "CLM-9303",
+    "CLM-9304",
+    "CLM-9305",
+    "CLM-9306",
+    "CLM-9401",
+    "CLM-9402",
+    "CLM-9403",
+    "CLM-9404",
+    "CLM-9101",
+    "CLM-9102",
+    "CLM-9103",
+    "CLM-9104",
+    "CLM-9501",
+    "CLM-9502",
+    "CLM-9503",
+    "CLM-9504",
+    "CLM-9505",
+    "CLM-9506",
+    "CLM-9507",
+    "CLM-9601",
+    "CLM-9602",
+    "CLM-9603",
+    "CLM-9604"
+  ],
+  "grouped": {
+    "cases": 40,
+    "tool_calls": 218,
+    "turns": 116,
+    "input_token_estimate": 661200,
+    "output_token_estimate": 18720,
+    "cost_estimate_usd": 0.110412,
+    "code_check_passes": 40
+  },
+  "sequential": {
+    "cases": 40,
+    "tool_calls": 218,
+    "turns": 218,
+    "input_token_estimate": 1602000,
+    "output_token_estimate": 30960,
+    "cost_estimate_usd": 0.258876,
+    "code_check_passes": 40
+  },
+  "comparison": {
+    "same_decision_cases": 40,
+    "same_evidence_order_cases": 40,
+    "all_code_checks_pass": true
+  },
+  "per_case": [
+    {
+      "case_id": "CLM-8842",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-8850",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-8861",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-8874",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-8888",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-8894",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-8901",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-8910",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-8917",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-8925",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-8933",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-8941",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-8952",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-8960",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-8971",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-9301",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-9302",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-9303",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-9304",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-9305",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-9306",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-9401",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-9402",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-9403",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-9404",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-9101",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-9102",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-9103",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-9104",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-9501",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-9502",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-9503",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-9504",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-9505",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-9506",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-9507",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-9601",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-9602",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-9603",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    },
+    {
+      "case_id": "CLM-9604",
+      "same_decision": true,
+      "same_evidence_order": true,
+      "grouped_code_check": true,
+      "sequential_code_check": true
+    }
+  ]
+}
