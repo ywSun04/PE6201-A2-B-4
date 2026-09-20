@@ -1088,18 +1088,17 @@ def call(problem, name, args):
     evaluation rather than the single case that produced it - D3(b)
     checklist case 12. Twenty good cases lost to one bad move.
 
-    `UnknownTool` and `UnknownArguments` are `ToolError`, so the loop can
-    catch that one base class and turn each into a single failed record.
-    THE agent.py SIDE IS PREETHI'S - it needs one except clause:
+    `UnknownTool` and `UnknownArguments` are `ToolError`, so the loop catches
+    that one base class and turns each into a single failed record:
 
         except tools.ToolError as err:
             stopped_by = err.reason
             record = {"decision": "escalate",
                       "reason": "tool layer refused - %s" % err.detail}
 
-    Until that lands, this still raises rather than guessing, which is the
-    safe half of the fix: a crash is recoverable, a confident wrong answer
-    on evidence that was never gathered is not.
+    This means one malformed call is recorded as an escalation while the
+    rest of the evaluation continues; it is safer than guessing from
+    evidence that was never gathered.
     """
     table = REGISTRY[problem]
     if name not in table:

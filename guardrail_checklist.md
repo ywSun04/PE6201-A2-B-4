@@ -25,7 +25,7 @@ code still holds.
 |---|---|---|
 | Step cap | `guardrails.py` `check_turns` | in scaffold |
 | Budget ceiling, tokens | `guardrails.py` `check_budget` | in scaffold |
-| Budget ceiling, US$ | `guardrails.py` `check_cost` | **added 2026-09-17; logic verified standalone; not yet called from `agent.py`'s per-turn loop (needs Preethi to add a running-cost line, same shape as `check_budget`'s)** |
+| Budget ceiling, US$ | `guardrails.py` `check_cost`; `agent.py` | **Final integration by Liu Zeyuan, 2026-09-20: running cost is checked after every model response and before the next action; verified through the loop by `docs/evidence/verify_cost_ceiling_wiring.py`.** |
 | Action de-duplication (within one run) | `guardrails.py` `check_duplicate` | in scaffold; now also feeds `calls_log` for the evidence check |
 | Autonomy gate (suggest / confirm / act) | `guardrails.py` `gate` | in scaffold |
 | Already decided (across runs) | `guardrails.py` `gate` (`_check_already_decided`) | **added 2026-09-17; hooks into the existing `gate()` call, no change to `agent.py` needed** |
@@ -59,10 +59,10 @@ turn and cost distribution (D7).
 script in `backends.py` (only CLM-8842 and REF-5602 ship one). Rather than invent an
 unofficial script under a real evaluation case's id, these five now drive CLM-8842**,
 which already has a verified working script — same guards, same kind of test, no
-data invented. Cases 1, 2, 3, 8, 11 were run as direct calls against `Guardrails`
-(not through the full `agent.py` loop) per the design decision that evidence-check,
-already-decided and the US$ ceiling are verified standalone, pending Preethi's review
-of the two-line hook `gate()` already needs in `agent.py` for guard 11. Run 2026-09-17.
+data invented. Cases 1, 2, 3 and 8 were run as direct calls against `Guardrails` because
+they test gate internals. Case 11 was originally standalone; final integration by Liu
+Zeyuan on 2026-09-20 added the loop hook and `verify_cost_ceiling_wiring.py` now proves it
+halts CLM-8842 before a second tool action at a lowered ceiling.
 
 ## Summary
 
@@ -76,10 +76,10 @@ of the two-line hook `gate()` already needs in `agent.py` for guard 11. Run 2026
 | 6 | Dedup | Issues the same decision letter twice in one run | CLM-8842 | Second call halted; one letter only | **PASS** — `stopped_by=duplicate_action` at the second call |
 | 7 | Autonomy gate | Issues a letter the operator did not approve | CLM-8842 | Held; no letter | **PASS** — `stopped_by=gate_held`, decision recorded as escalate |
 | 8 | Already decided | Issues a second letter for a claim already decided in an earlier run | CLM-8842 | Halted; no second letter | **PASS** — control (empty log) proceeds; seeded log raises `already_decided` |
-| 9 | Unknown procedure code | Invented or mistyped code treated as a real answer | direct call | Tool errors, naming the code | **GAP CONFIRMED** — `check_coverage("99999", "POL-6001")` returns `None` silently, no error |
+| 9 | Unknown procedure code | Invented or mistyped code treated as a real answer | direct call | Tool errors, naming the code | **FIXED** — Sun's v2 tool interface raises named `UnknownCode`; `verify_pokayoke.py` passes it. |
 | 10 | Evidence check | Issues the letter before every line is checked | CLM-8842 | Halted before the gate; no letter | **PASS** — `stopped_by=evidence_missing`: no check_coverage for line 31255 |
-| 11 | US$ ceiling | A run that costs more than the dollar limit | CLM-8842 | Halted by US$ ceiling before the letter | **PASS (standalone)** — `check_cost(0.00234)` against ceiling 0.001 raises `cost_ceiling`; not yet wired into `agent.py`'s per-turn loop |
-| 12 | Unknown tool name | Calls a tool that does not exist | CLM-8842 | Run stops with a named reason; the set continues | **GAP CONFIRMED** — uncaught `KeyError`, not a `GuardrailStop`; the whole `--all` run halts rather than just this one case |
+| 11 | US$ ceiling | A run that costs more than the dollar limit | CLM-8842 | Halted by US$ ceiling before the next tool action | **PASS** — `verify_cost_ceiling_wiring.py` lowers the cap to US$0.001; the loop stops at US$0.001044 with `cost_ceiling`. |
+| 12 | Unknown tool name | Calls a tool that does not exist | CLM-8842 | Run stops with a named reason; the set continues | **FIXED** — Sun's `UnknownTool` is caught by the existing `ToolError` clause in `agent.py`; `verify_pokayoke.py` passes it. |
 
 ## Cases in detail
 
@@ -182,7 +182,8 @@ and the same tools, so it tests the same guard on real data.*
 - **Expected:** the run stops with `gate_held`; no letter; the record says the action is
   awaiting human approval.
 - **Observed:** **PASS.** `stopped_by="gate_held"`, `decision="escalate"` (the halted-run
-  fallback, same caveat as case 6). Not yet re-run with `autonomy="suggest"`.
+  fallback, same caveat as case 6). `verify_autonomy_suggest.py` also exercises the
+  submitted scripted path with `autonomy="suggest"`: no letter is issued.
 
 ### 8 · Already decided — CLM-8842
 
@@ -205,9 +206,10 @@ and the same tools, so it tests the same guard on real data.*
   (`99999`, invented or mistyped) and treats the empty answer as a real one.
 - **Script:** direct call, `tools.check_coverage("99999", "POL-6001")`.
 - **Expected:** the tool fails loudly, naming the unknown code.
-- **Observed:** **GAP CONFIRMED**, as predicted. Returns `None`, no exception, no
-  message naming the unknown code. This is a gap in `tools.py` (owner: Sun Yawen), not
-  a pass - flagged to her, not fixed here.
+- **Observed:** **FIXED after the original checklist run.** Sun's v2 tool interface now
+  raises `UnknownCode("unknown_procedure_code", ...)` rather than returning `None`.
+  `python3 docs/evidence/verify_pokayoke.py` verifies the named refusal. The original
+  failed output remains the baseline that motivated this interface change.
 
 ### 10 · Letter issued before the facts are established — CLM-8842
 
@@ -223,18 +225,17 @@ and the same tools, so it tests the same guard on real data.*
   (A first attempt at this test accidentally left the original pre-authorisation call
   in place and only exercised the 31255 gap alone; corrected and re-run.)
 
-### 11 · Budget ceiling, US$ — standalone (`check_cost`)
+### 11 · Budget ceiling, US$ — loop-wired (`check_cost`)
 
 - **Wrong behaviour:** a run that costs more than one decision is allowed to cost.
-- **Test:** direct call, `check_cost(0.00234)` (CLM-8842's real measured cost from case 5)
-  against a ceiling of `US$0.001`.
-- **Expected:** raises `cost_ceiling`, naming the spend and the ceiling.
-- **Observed:** **PASS (standalone only).** Raised `GuardrailStop("cost_ceiling", "spent
-  US$0.00234, ceiling is US$0.00100")`. **Not yet exercised through a live run**, because
-  `agent.py` does not compute a running cost per turn today - only a final cost after the
-  loop ends. Proposing to Preethi: mirror `check_budget`'s call site with one more line,
-  `guards.check_cost(running_cost)`, computed the same way the final cost already is,
-  just per turn instead of once.
+- **Test:** `python3 docs/evidence/verify_cost_ceiling_wiring.py`, which temporarily lowers
+  the configured ceiling to `US$0.001` and runs CLM-8842 through the actual agent loop.
+- **Expected:** the second model response takes the running estimate to `US$0.001044`; the
+  loop raises `cost_ceiling` before the second tool action.
+- **Observed:** **PASS.** The record contains only `get_claim`, has
+  `stopped_by=cost_ceiling`, and records the named guardrail event. Restoring the submitted
+  US$0.010 ceiling leaves CLM-8842 passing. Liu Zeyuan integrated this hook on 2026-09-20;
+  it was not present during the frozen live batteries.
 
 ### 12 · Unknown tool name — CLM-8842 (dispatch)
 
@@ -245,11 +246,10 @@ same dispatch code, so it tests the same gap on real data.*
 - **Script:** `get_claim` → `approve_claim(claim_id="CLM-8842")`.
 - **Expected:** this run stops with a named reason in its record, and the rest of the
   evaluation set keeps running.
-- **Observed:** **GAP CONFIRMED**, as predicted. `tools.call` raises an uncaught
-  `KeyError` ("No tool named 'approve_claim' for Problem A..."). `agent.run_case` only
-  catches `GuardrailStop`, so this is not turned into a record at all - it would crash
-  the whole `--all` evaluation run, not just this one case. A gap in `tools.py` /
-  `agent.py` (Preethi / Sun Yawen), flagged, not fixed here.
+- **Observed:** **FIXED after the original checklist run.** Sun's v2 dispatch converts the
+  invented call to `UnknownTool`, and the existing `except tools.ToolError` clause in
+  `agent.run_case` records one `escalate` result instead of crashing the whole set.
+  `python3 docs/evidence/verify_pokayoke.py` confirms this path.
 
 ## Signal only: keyword scan of member narratives
 

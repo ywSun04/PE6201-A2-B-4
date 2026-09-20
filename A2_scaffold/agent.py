@@ -43,7 +43,7 @@ def run_case(case_id, problem=None, approve=None, verbose=False):
     started = time.time()
 
     guards = Guardrails(config.MAX_TURNS, config.MAX_TOKENS_PER_RUN,
-                        config.AUTONOMY)
+                        config.AUTONOMY, config.MAX_COST_USD)
     # WHAT THE MODEL IS TOLD. On the scripted backend these are ignored -
     # the moves are pre-written, so no prompt is ever sent. On the live
     # backend this IS the experiment D2(b) measures: the descriptors and
@@ -89,6 +89,8 @@ def run_case(case_id, problem=None, approve=None, verbose=False):
             ti, to = backend.token_estimate(transcript)
             tokens_in, tokens_out = tokens_in + ti, tokens_out + to
             guards.check_budget(tokens_in + tokens_out)
+            guards.check_cost((tokens_in / 1e6) * config.PRICE_IN
+                              + (tokens_out / 1e6) * config.PRICE_OUT)
 
             if verbose:
                 label = ("conclude" if "final" in move else "turn %d" % (turns + 1))
