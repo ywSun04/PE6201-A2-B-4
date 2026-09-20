@@ -132,6 +132,7 @@ PRICES = {
     "meta-llama/llama-3.3-70b-instruct":         (0.100, 0.320),
     "mistralai/mistral-small-3.2-24b-instruct":  (0.094, 0.250),
     "deepseek/deepseek-chat":                    (0.257, 1.029),
+    "anthropic/claude-haiku-4.5":                (1.000, 5.000),
 }
 
 # What an unlisted model falls back to. Deliberately not a real price:

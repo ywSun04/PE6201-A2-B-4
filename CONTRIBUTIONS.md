@@ -154,11 +154,25 @@ with the immediately preceding invalid date. The fixtures keep all references va
 not alter instructor rows.
 
 **D5(a) offline scripted evaluation.** Added deterministic replay paths for all seven Iris
-cases in `A2_scaffold/backends.py`. The committed default stays `BACKEND = "scripted"`, so
-`python3 A2_scaffold/run_eval.py` needs neither an API key nor network access. On the
-40-case frozen data set, the default replay covers the 19 cases that have scripts, including
-these seven; ordinary cases run once and negative cases run three times. The integrity checker
-passes before the replay, and its output is reproducible from a clean clone.
+cases in `A2_scaffold/backends.py`, then completed the remaining declared paths so the marker
+command covers the entire frozen 40-case queue. The committed default stays `BACKEND =
+"scripted"`, so `python3 A2_scaffold/run_eval.py --all` needs neither an API key nor network
+access. Ordinary cases run once and negative cases three times: **86 of 86 code checks passed
+(100%)**, median 2 turns, maximum 4, and no step-cap stops. The integrity checker passes before
+the replay, and the result is reproducible from a clean clone.
+
+**D5(b) live battery.** Ran `anthropic/claude-haiku-4.5` through OpenRouter with the shared
+v2 prompt on the frozen 40-case / 86-trial set. The automated headline is **0 of 86** with a
+median of 1 turn and US$0.655554 total cost (475,264 input and 36,058 output tokens). This is
+not evidence that Claude made 86 wrong adjudications: every response became the harness's
+`model did not return parseable JSON` fallback immediately after `get_claim`, so no trial reached
+an actual decision. The raw result is retained without a prompt, parser, or data change:
+`docs/evidence/live_results_iris_claude_v2.json`. See `docs/report_section3.md` for the
+cross-model interpretation.
+
+**Artefacts:** `docs/evidence/run_live_battery_iris_claude_v2.py`,
+`docs/evidence/live_results_iris_claude_v2.json`, and the recorded current Haiku price in
+`A2_scaffold/config.py`.
 
 **Commits** (`git log --author=waterrrr0924`): `e80979e`, `9ff7153`, `edd26c3`, `2f3587f`,
 `49643f6`, plus the scripted-replay update for CLM-9501–CLM-9507.
