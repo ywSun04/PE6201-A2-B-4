@@ -1,28 +1,47 @@
-# PE6201 Assignment 2 — Problem A Final Report
+# PE6201 Assignment 2 - Problem A Final Report
 
-**Team:** B-4  
-**Problem:** A — Claims Triage Agent  
-**Repository and reproducibility evidence:** `A2_scaffold/`, `docs/evidence/`, and the result ledgers linked below.
+**Team:** B-4<br>
+**Problem:** A - Claims Triage Agent<br>
+**Repository evidence:** `A2_scaffold/`, `docs/evidence/`, and the ledgers linked below.
 
-## 0. Why an agent?
+## 1. Why an agent?
 
-Problem A is not a one-shot classification problem. A claim can only be triaged by joining evidence held in separate claim, member, policy, procedure, hospital, pre-authorisation, required-document, and earlier-decision records. What should be looked up next is conditional on what has already been found: an inactive policy can end the investigation, a covered procedure may require a valid authorisation, and a missing document can change the action. A fixed workflow would either retrieve irrelevant data for every claim or become a fragile collection of special-case branches.
+Problem A is not a one-shot classification task. A claim must be triaged by joining separately stored claim, member, policy, procedure, hospital, pre-authorisation, required-document, and earlier-decision records. The next useful lookup depends on what has already been found: an inactive policy can end the run, a covered procedure can require authorisation, and a missing document can change the disposition. Crucially, these records can contradict the model at machine speed, so they provide the ground-truth signal required to supervise a loop.
 
-We therefore use a bounded tool-using agent. Starting from a claim identifier, it retrieves only the evidence needed for that case, then returns one controlled action: `approve_in_principle`, `request_document`, or `escalate`. This is useful agency rather than unrestricted automation because it is constrained by explicit tools, finite turn and token budgets, duplicate-action protection, evidence checks, and a human confirmation gate before a decision letter can be issued. The agent records its tool calls, observations, costs, and guardrail events, making each recommendation inspectable.
+We place the task on rung 7 of the Class 4 ladder. Rungs 1-6 are useful cheaper workflows, but none alone can select a varying sequence of evidence checks and then make a gated write. We move down the ladder only where the preceding rung fails.
 
-## 1. Agent loop and system architecture
+| Rung | What it would provide for Problem A | Why it is insufficient alone |
+|---|---|---|
+| 1. Single call | A fixed recommendation | No access to changing systems of record |
+| 2. Prompt chain | A known sequence of checks | Cannot adapt to lines, documents, or authorisation evidence |
+| 3. Routing | A choice among preset paths | The next evidence request is not one of a fixed set of lanes |
+| 4. Parallelisation | Faster independent lookups | Does not decide dependent next steps |
+| 5. Orchestrator-workers | Specialist delegation | Adds hand-offs without resolving the shared evidence dependency |
+| 6. Evaluator-optimiser | A second-pass critique | Can assess a draft, but cannot replace record-backed validation |
+| 7. Agent | Runtime selection of tools and sequence | Needed here, but bounded and audited |
 
-The implementation follows a ReAct-style loop: the model reads the current claim state, proposes one or more tool calls, receives structured observations, and repeats until it can reach a controlled conclusion. The execution layer, rather than the model alone, owns state and safety: it validates tool arguments, logs every event, deduplicates actions, applies resource limits, and checks the evidence behind a proposed result.
+Our single agent therefore retrieves evidence at runtime, may group independent calls, and returns only `approve_in_principle`, `request_document`, or `escalate`. Its first irreversible action is `issue_decision_letter`; that action is protected by deterministic evidence validation and a human confirmation policy. This is an agent rather than read-only agentic retrieval because it can eventually change the record, while the write is kept outside the model's unilateral control.
 
-The central architectural choice is to separate the semantic decision from the irreversible external action. The model may recommend a disposition, but `issue_decision_letter` is allowed only after the ledger has verified the relevant records and the configured autonomy policy permits it. This keeps the live model useful for selecting evidence under uncertainty while leaving validation, auditability, and irreversible effects to deterministic code.
+Run success compounds across turns. Using the measured code-check pass rate P and median turns T, the implied per-step diagnostic is `s = P^(1/T)`. It is not a physical constant - policy lookups and free-text reasoning are not equally reliable - but it makes the cost of longer trajectories visible. With T = 3 in the matched live batteries, the V1 and V2 values are:
+
+| Matched gpt-4o-mini battery | P | T | Implied s |
+|---|---:|---:|---:|
+| V1 | 17 / 86 | 3 | 0.583 |
+| V2 | 31 / 86 | 3 | 0.712 |
+
+The design therefore attacks both levers: improve evidence quality and descriptors where a step is weak, and remove only genuinely independent waiting by parallelising calls. Step and token ceilings prevent the cost of an unknown trajectory from becoming unbounded.
+
+### Single-agent architecture
+
+The implementation is a single-agent ReAct loop: Thought -> Action -> Observation -> repeat -> Final. The execution layer, not the model alone, owns state and safety: it validates arguments, logs events, deduplicates actions, applies budgets, and checks the evidence behind a proposed result. This separates a useful semantic recommendation from an irreversible external action and keeps the run auditable.
 
 ## 2. Tool design and parallel tool calling
 
-We designed seven tools around information needs rather than mirroring every data file. `get_claim` establishes the case; member, policy, hospital, coverage, pre-authorisation, duplicate, and decision tools answer distinct questions that can change the disposition. Required documents are returned as a coverage field rather than exposed as an eighth independent tool, avoiding a needless call. V2 strengthens the descriptors with typed arguments, timing, outputs, prohibited uses, and bounds. For example, unknown identifiers return named errors; malformed duplicate checks are rejected; and the final action is validated against the accumulated record.
+We designed seven tools around information needs rather than mirroring every data file. `get_claim` establishes the case; member, policy, hospital, coverage, pre-authorisation, duplicate, and decision tools answer questions that can change the disposition. Required documents are returned as a coverage field rather than exposed as an eighth independent tool. V2 adds typed arguments, timing, outputs, prohibited uses, and bounds. Unknown identifiers return named errors, malformed duplicate checks are rejected, and the final action is validated against the accumulated record.
 
-Some calls are independent after the claim is known, whereas others depend on an earlier result. The agent may therefore group independent lookups in one model turn, but must preserve order for dependencies such as checking a pre-authorisation only after coverage says it is needed. Our deterministic scheduling control verifies this rule across the full frozen set: grouped and sequential schedules produced identical decisions and evidence order, while grouping reduced the number of model turns. The figures in the linked ledger are transcript estimates, not vendor billing tokens; the control deliberately raises normal safety caps only to isolate scheduling from semantic behaviour.
+Calls that become independent after `get_claim` may be grouped in one model turn; calls whose inputs depend on an earlier observation remain ordered. The full-set deterministic control confirms that grouped and sequential schedules produce the same decisions and evidence order. Its figures are transcript estimates rather than vendor billing tokens, and it deliberately raises normal safety caps only to isolate scheduling.
 
-| Full-set deterministic control | Sequential | Grouped |
+| Full-set deterministic scheduling control | Sequential | Grouped |
 |---|---:|---:|
 | Cases / tool calls | 40 / 218 | 40 / 218 |
 | Model turns | 218 | 116 |
@@ -31,47 +50,61 @@ Some calls are independent after the claim is known, whereas others depend on an
 
 Evidence: `docs/evidence/parallel_call_measurement.json` and `docs/evidence/measure_parallel_calls.py`.
 
-## 3. Guardrails and verification
+## 3. What the evidence showed
 
-The agent is bounded by an eight-turn cap and a 60,000-token cap. It also rejects repeated actions, stops a second attempt to decide an already decided claim, validates proposed evidence before a letter can be issued, and uses the configured autonomy policy to hold irreversible actions for human confirmation. A per-turn dollar ceiling is wired at the execution layer, so cost enforcement does not rely on model compliance.
+We froze Problem A at 40 claims and 86 trials before comparing prompts or models. Automated code checks score the final action and supporting record; strict human review separately checks whether the recorded explanation contains every required reasoning point. A correct action can therefore still be unsuitable for audit or communication. The scripted replay is the deterministic baseline and passes all 86 trials; live batteries were retained without rerunning failed cases or cherry-picking outcomes.
 
-We verified the guards with focused, reproducible checks. A deliberately low dollar ceiling stops execution after the first paid tool call; `suggest` autonomy records a recommendation but does not issue a letter; and invalid tool requests are rejected by the Poka-yoke tests. These checks test system behaviour that ordinary accuracy metrics cannot reveal. The dollar hook was added after the frozen live batteries, so it is verified separately and does not alter their reported results.
-
-Evidence: `docs/evidence/verify_cost_ceiling_wiring.py`, `docs/evidence/verify_autonomy_suggest.py`, and `docs/evidence/verify_pokayoke.py`.
-
-## 4. Evaluation method and results
-
-We froze Problem A at 40 claims and 86 trials before comparing prompts or models. Automated code checks score the final action and supporting record; a stricter human review separately checks whether the recorded explanation contains every required reasoning point. This distinction matters: a correct action can still lack the evidence needed for audit or communication. The scripted replay provides a deterministic baseline and passes all 86 trials; live batteries are retained without rerunning failed cases or cherry-picking outcomes.
-
-The cleanest comparison is V1 versus V2 on the same `openai/gpt-4o-mini` model, frozen set, and trial mix. V2 improves the automated pass rate, but costs more and does not reduce the stricter review burden in this dataset. It should therefore be read as an improvement in executable task completion, not proof that its explanations are ready for unattended use. Other vendor results are useful integration observations, not a capability league table: Gemini and Claude encountered substantial structured-output parsing failures, so their totals also measure compatibility with this harness.
+The cleanest experiment holds `openai/gpt-4o-mini`, the frozen set, and the trial mix constant while changing V1 to V2. V2 improves executable task completion but costs more and did not reduce strict reasoning-review failure. It is therefore not evidence that explanations are ready for unattended use. Other vendor results are integration observations, not a capability ranking: Gemini and Claude encountered structured-output parsing failures, so their totals also reflect compatibility with this harness.
 
 | Live battery | Prompt / model | Automated code checks | Total model cost | Interpretation |
 |---|---|---:|---:|---|
 | Liu | V1 / gpt-4o-mini | 17 / 86 (19.8%) | US$0.065094 | Matched baseline |
-| Preethi | V2 / gpt-4o-mini | 31 / 86 (36.0%) | US$0.122829 | Matched V1/V2 comparison |
-| Sun | V2 / qwen3.8-flash | 19 / 86 (22.1%) | US$0.153983 | Descriptive cross-model result |
-| Kou | V2 / Mistral | 6 / 86 (7.0%) | US$0.042586 | Descriptive cross-model result |
+| Preethi | V2 / gpt-4o-mini | 31 / 86 (36.0%) | US$0.122829 | Matched comparison |
+| Sun | V2 / qwen3.8-flash | 19 / 86 (22.1%) | US$0.153983 | Cross-model observation |
+| Kou | V2 / Mistral | 6 / 86 (7.0%) | US$0.042586 | Cross-model observation |
 | Harry | V2 / Gemini | 8 / 86 (9.3%) | US$1.037978 | 68 parse fallbacks |
 | Iris | V2 / Claude | 0 / 86 | US$0.655554 | 86 parse fallbacks after claim retrieval |
 
-The V1 human review found 1 of 40 explanations complete; the V2 review found 0 of 40 complete. Review records, transcripts, and full numbers are in `docs/evidence/live_results_liu_v1.json`, `Preethi_gpt-4o-mini_v2_40cases_combined_results.json`, `docs/evidence/live_results.json`, `docs/evidence/live_results_kou_v2.json`, and `docs/evidence/live_results_harry.json`.
+The V1 strict review found 1 of 40 explanations complete; the V2 review found 0 of 40 complete. Guardrails also matter independently of pass rate: an eight-turn cap, 60,000-token cap, action de-duplication, evidence validation, human confirmation, and a per-turn dollar ceiling are verified by focused scripts. The cost hook was added after the frozen live batteries, so it does not alter their numbers.
+
+Evidence: `docs/evidence/live_results_liu_v1.json`, `Preethi_gpt-4o-mini_v2_40cases_combined_results.json`, `docs/evidence/live_results.json`, `docs/evidence/live_results_kou_v2.json`, `docs/evidence/live_results_harry.json`, `docs/evidence/verify_cost_ceiling_wiring.py`, `docs/evidence/verify_autonomy_suggest.py`, and `docs/evidence/verify_pokayoke.py`.
+
+## 4. What it costs
+
+We use the brief's declared Problem A deployment scenario: 8,000 claims per month and a US$7.60 assessor escalation cost (US$38/hour for 12 minutes). This is a stated scenario, not a measured production workload. The measured 86-trial ledger supplies the per-run inference cost and code-check pass rate. Layer 3 is US$0 only in this local-JSON prototype; production storage, network, monitoring, and maintenance remain unpriced rather than free.
+
+| Expected cost per claim in the stated scenario | V1 | V2 |
+|---|---:|---:|
+| Layer 1: metered model cost | US$0.000757 | US$0.001428 |
+| Layer 2: expected fallback, `(1 - P) x US$7.60` | US$6.097674 | US$4.860465 |
+| Layers 1 + 2 | US$6.098431 | US$4.861893 |
+| Monthly cost at 8,000 claims, before fixed layer 3 | US$48,787.45 | US$38,895.15 |
+
+The four measured levers explain the result. Success rate dominates expected cost because a US$7.60 human fallback is much larger than a fraction-of-a-cent inference call. Turn count is the next largest runtime lever; descriptor and observation sizes matter because they are sent repeatedly.
+
+| Lever | Measured evidence | Cost implication |
+|---|---|---|
+| Tool block size B | Returning a required-document field costs 315 tokens; adding an eighth tool would cost 59,100 descriptor tokens over the measured pass | Avoid a permanently repeated descriptor |
+| Turn count T | Grouped scheduling reduces 218 turns to 116 with identical outcomes | Reduces repeated context and latency |
+| Observation size D | V2 coverage response adds 519 tokens across 67 calls | Small necessary field cost is explicit and bounded |
+| Success rate P | V1 19.8%; V2 36.0% | Determines expected human fallback |
+
+The V2 monthly estimate is US$44,975.15 at a pass rate ten percentage points below the observed value and US$32,815.15 ten points above it, plus the same unknown fixed platform layer. The conclusion survives this range: V2 remains cheaper than V1 under the stated fallback assumption.
+
+For the break-even calculation, treat V1 as the cheaper configuration with C = US$0.000757 per run, V2 as the more expensive configuration with E = US$4.861893 including its measured failures, and F = US$7.60 per failure. The required cheap-configuration success rate is `1 - (E - C) / F = 36.04%`. V1's observed 19.8% falls well short, so V2 is the lower expected-cost choice in this scenario. This conclusion is conditional: strict human review did not establish that V2 reduces explanation-review workload, so code-check failure is only a provisional fallback proxy.
+
+Evidence: `docs/report_section6.md`, `docs/D2a_tool_design.md`, `docs/evidence/measure_return_sizes.py`, and the matched live ledgers above.
 
 ## 5. Two reproduced failures
 
-The first reproduced failure removes action de-duplication. On an expired pre-authorisation case, the agent continues revisiting the same action instead of making progress. The final disposition remains correct, but the run expands from four to six turns and consumes substantially more tokens without triggering the ordinary caps. This demonstrates why final-action accuracy is inadequate as the only success measure: a system can be right yet unnecessarily expensive and unstable.
+The first reproduced failure removes action de-duplication. On an expired pre-authorisation case, the agent revisits the same action instead of making progress. The final disposition remains correct, but the run expands from four to six turns and consumes substantially more tokens without triggering the ordinary caps. Final-action accuracy is therefore insufficient: a system can be right yet unnecessarily expensive and unstable.
 
-The second failure removes the computed remaining policy limit. For CLM-9302, the annual limit looks sufficient when viewed alone, but earlier approved claims have already consumed most of it. Without the computed remainder, the agent approves a claim that should be escalated. This is a tool-interface defect, not simply a poor prompt: the necessary fact was not made available in the form required for a correct decision. Both reproductions show why guardrails and tool semantics must be evaluated alongside model output.
+The second failure removes the computed remaining policy limit. For CLM-9302, the annual limit looks sufficient when viewed alone, but earlier approved claims have already consumed most of it. Without the computed remainder, the agent approves a claim that should be escalated. This is a tool-interface defect, not simply a poor prompt: the necessary fact was not made available in the form required for a correct decision.
 
 Evidence: `docs/report_section5.md` and the reproduced-failure scripts referenced there.
 
-## 6. Cost to serve and conclusion
+## 6. What we would not deploy
 
-Cost to serve has three layers: model inference, platform operation, and human exception handling. The prototype's local JSON data means platform cost is not yet representative of production, where storage, network, monitoring, and security controls would be added. The matched V1/V2 result shows V2's higher inference cost buys more automated code-check passes. If every avoided automated failure would otherwise require human review, the illustrative break-even threshold is US$0.00412 per avoided review.
+We would not deploy a multi-agent orchestrator-and-workers design for this version. A second reviewer agent could plausibly flag incomplete decision explanations - an important concern given the strict review results - but it would add another model call, a long shared transcript, hand-off ambiguity, and another source of structured-output failure. It would still need the same deterministic ledger checks before any write, so it does not remove the governing safety problem. Independent evidence calls already run in parallel inside one agent; adding multiple agents is not the same optimisation.
 
-That threshold is conditional, not a production saving claim. Strict human review found neither prompt reliably records all required reasoning points, and V2 did not show a lower reasoning-review burden. Until independent reviewers confirm that explanation quality and exception workload improve, human review remains part of the service design. Our conclusion is therefore limited: bounded tool use, explicit validation, and parallel scheduling make the system more controllable and more efficient than an unstructured workflow, but live deployment requires stronger structured-output handling and evidence-complete explanations.
-
-Evidence and calculations: `docs/report_section6.md`, `docs/evidence/live_results_liu_v1.json`, and `Preethi_gpt-4o-mini_v2_40cases_combined_results.json`.
-
-## Limitations
-
-The deterministic scheduler estimates cannot be compared directly with vendor token bills. Cross-vendor live results confound model behaviour with structured-output compatibility. Automated code checks verify the proposed record, not the completeness of written reasoning. Finally, the V2 strict review was completed during final integration rather than by an independent reviewer; the raw V2 results were not changed. These constraints motivate the conservative conclusions above.
+We therefore retain one ReAct control loop, deterministic validation, and a human confirmation gate. A future reviewer agent is worth testing only after the current evidence-completeness and parser failures are fixed, with a measured comparison against the single-agent baseline. We also would not deploy fully autonomous letter issuing, use cross-vendor pass rates as a simple model ranking, or interpret automated code checks as proof of explanation quality. These are limits of the current evidence, not claims of production readiness.
